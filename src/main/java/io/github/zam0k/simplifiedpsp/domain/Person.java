@@ -9,12 +9,13 @@ import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @NoArgsConstructor
 @Data
 @MappedSuperclass
-public class User {
+public class Person {
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
@@ -27,4 +28,5 @@ public class User {
     @Column(nullable = false, unique = true)
     private String email;
     private String password;
+    private BigDecimal balance;
 }
