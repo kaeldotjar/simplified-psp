@@ -8,14 +8,12 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Entity
-@Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "discriminator", discriminatorType = DiscriminatorType.STRING, length = 1)
-@DiscriminatorValue("P")
+@Inheritance(strategy = InheritanceType.TABLE_PER_CLASS)
 @NoArgsConstructor
 @Data
 public abstract class Person {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(updatable = false, nullable = false)
     private Long id;
     @Column(name = "full_name", nullable = false, length = 200)
@@ -24,8 +22,6 @@ public abstract class Person {
     private String email;
     private String password;
     private BigDecimal balance;
-    @Column(insertable = false, updatable = false)
-    private String type;
     @OneToMany(mappedBy="payer")
     private List<Transaction> payments;
     @OneToMany(mappedBy="payee")
