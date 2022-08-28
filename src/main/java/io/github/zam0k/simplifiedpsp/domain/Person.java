@@ -5,11 +5,15 @@ import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.List;
 
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorColumn(name = "discriminator", discriminatorType = DiscriminatorType.STRING, length = 1)
+@DiscriminatorValue("P")
 @NoArgsConstructor
 @Data
-@MappedSuperclass
-public class Person {
+public abstract class Person {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false, nullable = false)
@@ -20,4 +24,10 @@ public class Person {
     private String email;
     private String password;
     private BigDecimal balance;
+    @Column(insertable = false, updatable = false)
+    private String type;
+    @OneToMany(mappedBy="payer")
+    private List<Transaction> payments;
+    @OneToMany(mappedBy="payee")
+    private List<Transaction> receipts;
 }
