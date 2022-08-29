@@ -1,17 +1,43 @@
 package io.github.zam0k.simplifiedpsp.domain;
 
-import lombok.Data;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import javax.persistence.*;
+import java.math.BigDecimal;
+import java.util.List;
 
 @Entity
 @Table(name = "natural_person")
-@Data
+@Setter @Getter @EqualsAndHashCode
 @NoArgsConstructor
-public class NaturalPerson extends Person {
+public class NaturalPerson {
+    @Id
+    @GeneratedValue(strategy = GenerationType.TABLE)
+    @Column(updatable = false, nullable = false)
+    private Long id;
+    @Column(name = "full_name", nullable = false, length = 200)
+    private String fullName;
     @Column(nullable = false, unique = true, length = 11)
     private String cpf;
+    @Column(nullable = false, unique = true)
+    private String email;
+    private String password;
+    @Column(nullable = false)
+    private BigDecimal balance;
+//    @OneToMany(mappedBy="payer")
+//    private List<Transaction> payments;
+//    @OneToMany(mappedBy="payee")
+//    private List<Transaction> receipts;
+
+    @JsonIgnore
+    @ManyToMany
+    @JoinTable(name = "belongs_to",
+    joinColumns = @JoinColumn(name = "natural_person_id"),
+    inverseJoinColumns = @JoinColumn(name = "juridical_person_id"))
+    private List<JuridicalPerson> shops;
+
 }
