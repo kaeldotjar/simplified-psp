@@ -5,7 +5,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 import java.math.BigDecimal;
-import java.util.Set;
+import java.util.List;
 
 @Getter @Setter @ToString
 public class JuridicalPersonDTO {
@@ -14,6 +14,6 @@ public class JuridicalPersonDTO {
     private String email;
     private String password;
     private BigDecimal balance;
-    private Set<NaturalPersonDTO> owners;
+    private List<NaturalPersonDTO> owners;
 
 }

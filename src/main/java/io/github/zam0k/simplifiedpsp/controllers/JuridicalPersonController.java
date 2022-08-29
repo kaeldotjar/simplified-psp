@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.net.URI;
 
 @RestController
 @RequestMapping("/juridical-person")
@@ -20,8 +23,8 @@ public class JuridicalPersonController {
     @PostMapping
     public ResponseEntity<JuridicalPerson> create(@RequestBody JuridicalPersonDTO entity) {
         JuridicalPerson newEntity = service.save(entity);
-//        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-//                .path("/{id}").buildAndExpand(newEntity.getId()).toUri();
-        return ResponseEntity.ok(newEntity);
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}").buildAndExpand(newEntity.getId()).toUri();
+        return ResponseEntity.created(uri).build();
     }
 }
