@@ -1,7 +1,6 @@
 package io.github.zam0k.simplifiedpsp.domain;
 
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -12,22 +11,20 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "transaction")
 @Data
-@NoArgsConstructor @AllArgsConstructor
+@NoArgsConstructor
 public class Transaction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(updatable = false, nullable = false)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payer_id", nullable = false)
-    private Person payer;
+    @Column(name = "payer_id")
+    private Long payer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payee_id", nullable = false)
-    private Person payee;
+    @Column(name = "payee_id")
+    private Long payee;
 
-    @Column(name = "`VALUE`", nullable = false)
+    @Column(name = "`value`")
     private BigDecimal value;
 
     @Column(name = "created_at", nullable = false)
