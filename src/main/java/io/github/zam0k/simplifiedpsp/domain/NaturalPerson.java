@@ -14,7 +14,7 @@ import java.util.List;
 @Table(name = "natural_person")
 @Setter @Getter @EqualsAndHashCode
 @NoArgsConstructor
-public class NaturalPerson {
+public final class NaturalPerson implements IPayer, IPayee {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(updatable = false, nullable = false)
@@ -28,10 +28,6 @@ public class NaturalPerson {
     private String password;
     @Column(nullable = false)
     private BigDecimal balance;
-//    @OneToMany(mappedBy="payer")
-//    private List<Transaction> payments;
-//    @OneToMany(mappedBy="payee")
-//    private List<Transaction> receipts;
 
     @JsonIgnore
     @ManyToMany
@@ -40,4 +36,13 @@ public class NaturalPerson {
     inverseJoinColumns = @JoinColumn(name = "juridical_person_id"))
     private List<JuridicalPerson> shops;
 
+    @Override
+    public void receiveValue(BigDecimal value) {
+        setBalance(getBalance().add(value));
+    }
+
+    @Override
+    public void removeValue(BigDecimal value) {
+        setBalance(getBalance().subtract(value));
+    }
 }
