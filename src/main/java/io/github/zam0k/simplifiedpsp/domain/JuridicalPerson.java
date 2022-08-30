@@ -13,7 +13,7 @@ import java.util.List;
 @Table(name = "juridical_person")
 @Getter @Setter @EqualsAndHashCode
 @NoArgsConstructor
-public class JuridicalPerson {
+public final class JuridicalPerson implements IPayee {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(updatable = false, nullable = false)
@@ -27,10 +27,6 @@ public class JuridicalPerson {
     private String password;
     @Column(nullable = false)
     private BigDecimal balance;
-//    @OneToMany(mappedBy="payer")
-//    private List<Transaction> payments;
-//    @OneToMany(mappedBy="payee")
-//    private List<Transaction> receipts;
 
     @ManyToMany(mappedBy = "shops")
     private List<NaturalPerson> owners;
@@ -45,4 +41,8 @@ public class JuridicalPerson {
         person.forEach(p -> p.getShops().add(this));
     }
 
+    @Override
+    public void receiveValue(BigDecimal value) {
+        setBalance(getBalance().add(value));
+    }
 }
