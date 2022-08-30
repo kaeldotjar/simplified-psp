@@ -8,37 +8,39 @@ import io.github.zam0k.simplifiedpsp.repositories.JuridicalPersonRepository;
 import io.github.zam0k.simplifiedpsp.repositories.NaturalPersonRepository;
 import io.github.zam0k.simplifiedpsp.repositories.TransactionRepository;
 import io.github.zam0k.simplifiedpsp.services.TransactionService;
+import io.github.zam0k.simplifiedpsp.services.exceptions.BadRequestException;
+import io.github.zam0k.simplifiedpsp.services.exceptions.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 @Service
+@RequiredArgsConstructor
 public class TransactionServiceImpl implements TransactionService {
 
-    @Autowired
-    private TransactionRepository repository;
-
-    @Autowired
-    private NaturalPersonRepository naturalPersonRepository;
-
-    @Autowired
-    private JuridicalPersonRepository juridicalPersonRepository;
-    
-    @Autowired
-    private ModelMapper mapper;
+    private final TransactionRepository repository;
+    private final NaturalPersonRepository naturalPersonRepository;
+    private final JuridicalPersonRepository juridicalPersonRepository;
+    private final ModelMapper mapper;
 
     @Override
+    @Transactional
     public Transaction create(TransactionDTO entity) {
 
         Transaction transaction = mapper.map(entity, Transaction.class);
+        BigDecimal value = transaction.getValue();
         IPayer payer = getPayer(transaction);
+
+        if(value.compareTo(payer.getBalance()) >= 0)
+            throw new BadRequestException("Insufficient funds");
+
         IPayee payee = getPayee(transaction);
 
-        BigDecimal value = transaction.getValue();
         payee.receiveValue(value);
         payer.removeValue(value);
 
@@ -47,17 +49,14 @@ public class TransactionServiceImpl implements TransactionService {
 
     private IPayee getPayee(Transaction transaction) {
         Long payeeId = transaction.getPayee();
-        // TO-DO: custom exception: EntityNotFoundException???
         return Stream.of(naturalPersonRepository.findById(payeeId), juridicalPersonRepository.findById(payeeId))
-                .filter(Optional::isPresent).map(Optional::get).findFirst().orElseThrow(RuntimeException::new);
+                .filter(Optional::isPresent).map(Optional::get).findFirst()
+                .orElseThrow(NotFoundException::new);
 
     }
 
     private IPayer getPayer(Transaction transaction) {
         Long payerId = transaction.getPayer();
-        // TO-DO: custom exception: BusinessLogicException() BAD-REQUEST
-        if(juridicalPersonRepository.findById(payerId).isPresent()) throw new RuntimeException();
-        // TO-DO: custom exception: EntityNotFoundException???
-        return naturalPersonRepository.findById(payerId).orElseThrow(RuntimeException::new);
+        return naturalPersonRepository.findById(payerId).orElseThrow(NotFoundException::new);
     }
 }

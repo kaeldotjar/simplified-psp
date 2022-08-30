@@ -3,7 +3,7 @@ package io.github.zam0k.simplifiedpsp.controllers;
 import io.github.zam0k.simplifiedpsp.controllers.dto.TransactionDTO;
 import io.github.zam0k.simplifiedpsp.domain.Transaction;
 import io.github.zam0k.simplifiedpsp.services.TransactionService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,15 +15,16 @@ import java.net.URI;
 
 @RestController
 @RequestMapping("/transaction")
+@RequiredArgsConstructor
 public class TransactionController {
 
-    @Autowired
-    private TransactionService service;
+    private final TransactionService service;
 
     @PostMapping
     public ResponseEntity<Transaction> create(@RequestBody TransactionDTO transaction) {
         Transaction newEntity = service.create(transaction);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(newEntity.getId()).toUri();
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .path("/{id}").buildAndExpand(newEntity.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }
 }

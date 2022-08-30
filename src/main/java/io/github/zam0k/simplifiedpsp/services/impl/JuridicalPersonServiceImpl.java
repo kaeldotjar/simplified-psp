@@ -7,23 +7,21 @@ import io.github.zam0k.simplifiedpsp.domain.NaturalPerson;
 import io.github.zam0k.simplifiedpsp.repositories.JuridicalPersonRepository;
 import io.github.zam0k.simplifiedpsp.repositories.NaturalPersonRepository;
 import io.github.zam0k.simplifiedpsp.services.JuridicalPersonService;
+import io.github.zam0k.simplifiedpsp.services.exceptions.NotFoundException;
+import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class JuridicalPersonServiceImpl implements JuridicalPersonService {
 
-    @Autowired
-    private JuridicalPersonRepository repository;
-    @Autowired
-    private NaturalPersonRepository naturalPersonRepository;
-
-    @Autowired
-    private ModelMapper mapper;
+    private final JuridicalPersonRepository repository;
+    private final NaturalPersonRepository naturalPersonRepository;
+    private final ModelMapper mapper;
 
     @Override
     public JuridicalPerson save(JuridicalPersonDTO entity) {
@@ -43,16 +41,14 @@ public class JuridicalPersonServiceImpl implements JuridicalPersonService {
 
     @Override
     public JuridicalPerson findOneById(Long id) {
-        // TO-DO: create a custom error for this (MissingEntityException?)
-        return repository.findById(id).orElseThrow(RuntimeException::new);
+        return repository.findById(id).orElseThrow(NotFoundException::new);
     }
 
 
     private List<NaturalPerson> getAllOwners(JuridicalPersonDTO entity) {
         List<Long> ids = entity.getOwners().stream().map(NaturalPersonDTO::getId).collect(Collectors.toList());
         List<NaturalPerson> owners = naturalPersonRepository.findAllById(ids);
-        // TO-DO: create a custom error for this (MissingEntityException?)
-        if(owners.size() < entity.getOwners().size()) throw new RuntimeException();
+        if(owners.size() < entity.getOwners().size()) throw new NotFoundException();
         return owners;
     }
 
