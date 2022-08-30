@@ -36,6 +36,18 @@ public class JuridicalPersonServiceImpl implements JuridicalPersonService {
         return repository.save(person);
     }
 
+    @Override
+    public List<JuridicalPerson> findAll() {
+        return repository.findAll();
+    }
+
+    @Override
+    public JuridicalPerson findOneById(Long id) {
+        // TO-DO: create a custom error for this (MissingEntityException?)
+        return repository.findById(id).orElseThrow(RuntimeException::new);
+    }
+
+
     private List<NaturalPerson> getAllOwners(JuridicalPersonDTO entity) {
         List<Long> ids = entity.getOwners().stream().map(NaturalPersonDTO::getId).collect(Collectors.toList());
         List<NaturalPerson> owners = naturalPersonRepository.findAllById(ids);
