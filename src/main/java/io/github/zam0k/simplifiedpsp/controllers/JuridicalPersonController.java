@@ -39,4 +39,11 @@ public class JuridicalPersonController {
         return ResponseEntity.ok(service.findOneById(id));
     }
 
+    @PostMapping("/{id}/owner/{ownerId}")
+    public ResponseEntity<JuridicalPerson> addNewOwner(@PathVariable("ownerId") Long ownerId,
+                                                   @PathVariable("id") Long id) {
+        service.addNewOwner(id, ownerId);
+        return ResponseEntity.noContent().build();
+    }
+
 }
