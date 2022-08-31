@@ -44,7 +44,6 @@ public class TransactionServiceImpl implements TransactionService {
     private final RestTemplate restTemplate;
 
     @Override
-    @Transactional
     public Transaction create(TransactionDTO entity) {
 
         Transaction transaction = mapper.map(entity, Transaction.class);
@@ -56,6 +55,11 @@ public class TransactionServiceImpl implements TransactionService {
 
         IPayee payee = getPayee(transaction);
 
+        return executeTransaction(transaction, value, payer, payee);
+    }
+
+    @Transactional
+    private Transaction executeTransaction(Transaction transaction, BigDecimal value, IPayer payer, IPayee payee) {
         payee.receiveValue(value);
         payer.removeValue(value);
 
