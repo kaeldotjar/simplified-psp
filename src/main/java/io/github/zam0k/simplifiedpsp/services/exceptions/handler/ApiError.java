@@ -4,12 +4,21 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
 public class ApiError {
     private LocalDateTime timestamp;
     private Integer status;
-    private String error;
+    private List<String> error;
     private String path;
+
+    public ApiError(LocalDateTime timestamp, Integer status, String error, String path) {
+        this.timestamp = timestamp;
+        this.status = status;
+        this.error = Collections.singletonList(error);
+        this.path = path;
+    }
 }
