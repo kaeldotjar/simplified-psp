@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.validation.Valid;
 import java.net.URI;
 
 @RestController
@@ -20,7 +21,7 @@ public class NaturalPersonController {
     private final NaturalPersonService service;
 
     @PostMapping
-    public ResponseEntity<NaturalPerson> create(@RequestBody NaturalPersonDTO entity) {
+    public ResponseEntity<NaturalPerson> create(@Valid @RequestBody NaturalPersonDTO entity) {
         NaturalPerson newEntity = service.save(entity);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}").buildAndExpand(newEntity.getId()).toUri();
