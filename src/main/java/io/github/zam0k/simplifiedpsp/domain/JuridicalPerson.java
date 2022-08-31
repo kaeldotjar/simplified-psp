@@ -1,11 +1,14 @@
 package io.github.zam0k.simplifiedpsp.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.br.CNPJ;
 
 import javax.persistence.*;
+import javax.validation.constraints.Email;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -21,9 +24,12 @@ public final class JuridicalPerson implements IPayee {
     @Column(name = "full_name", nullable = false, length = 200)
     private String fullName;
     @Column(nullable = false, unique = true, length = 14)
+    @CNPJ(message = "Invalid cnpj format")
     private String cnpj;
     @Column(nullable = false, unique = true)
+    @Email(message = "Invalid email format")
     private String email;
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
     @Column(nullable = false)
     private BigDecimal balance;
