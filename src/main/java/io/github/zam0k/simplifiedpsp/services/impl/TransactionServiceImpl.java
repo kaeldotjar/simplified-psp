@@ -12,9 +12,14 @@ import io.github.zam0k.simplifiedpsp.services.exceptions.BadGatewayException;
 import io.github.zam0k.simplifiedpsp.services.exceptions.BadRequestException;
 import io.github.zam0k.simplifiedpsp.services.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
@@ -23,10 +28,13 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.HttpStatus.OK;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 
 @Service
 @RequiredArgsConstructor
+@Log4j2
 public class TransactionServiceImpl implements TransactionService {
 
     private final TransactionRepository repository;
@@ -53,7 +61,44 @@ public class TransactionServiceImpl implements TransactionService {
 
         authorizeTransaction();
 
+        // TO-DO: find a way to optimize this so it doesn't take 8 seconds to complete the transaction
+        notifyPayee(payee);
+
         return repository.save(transaction);
+    }
+
+    private void notifyPayee(IPayee payee) {
+        // TO-DO: refactor this with a message broker later
+
+        String notifyApiURL =
+                "http://o4d9z.mocklab.io/notify";
+
+        ResponseEntity<String> response;
+
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(APPLICATION_JSON);
+
+            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("email", payee.getEmail());
+
+            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+
+            response = restTemplate
+                    .postForEntity(notifyApiURL, request, String.class);
+
+            // TO-DO: check if there's a more fitting error for this
+            if(response.getStatusCode() == CREATED) {
+                log.warn("Could not send notification to payee");
+                return;
+            }
+
+            log.info("Payment notification sent to payee");
+
+        } catch (RestClientException e) {
+            log.warn("Notify API currently unavailable");
+        }
+
     }
 
     private void authorizeTransaction() {
