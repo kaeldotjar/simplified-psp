@@ -107,6 +107,20 @@ class JuridicalPersonServiceImplTest {
 
     @Test
     void findAll() {
+        when(repository.findAll()).thenReturn(List.of(entity));
+
+        List<JuridicalPerson> response = service.findAll();
+
+        assertAll(
+                () -> assertEquals(1, response.size()),
+                () -> assertEquals(JuridicalPerson.class, response.get(0).getClass()),
+                () -> assertEquals(ID, response.get(0).getId()),
+                () -> assertEquals(FULL_NAME, response.get(0).getFullName()),
+                () -> assertEquals(CNPJ, response.get(0).getCnpj()),
+                () -> assertEquals(EMAIL, response.get(0).getEmail()),
+                () -> assertEquals(PASSWORD, response.get(0).getPassword()),
+                () -> assertEquals(BALANCE, response.get(0).getBalance())
+        );
 
     }
 
