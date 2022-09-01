@@ -1,5 +1,6 @@
 package io.github.zam0k.simplifiedpsp.controllers.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -8,6 +9,7 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 @Getter @Setter
+@AllArgsConstructor
 public class TransactionDTO {
     @NotNull(message = "Payer must not be null")
     private Long payer;

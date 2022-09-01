@@ -1,13 +1,12 @@
 package io.github.zam0k.simplifiedpsp.utils;
 
 import io.github.zam0k.simplifiedpsp.domain.IPayee;
-import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClientException;
@@ -16,15 +15,12 @@ import org.springframework.web.client.RestTemplate;
 import static org.springframework.http.HttpStatus.CREATED;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
 
-@Component
 @Log4j2
-@AllArgsConstructor
+@NoArgsConstructor
 public class PaymentNotifier {
 
-    private final RestTemplate restTemplate;
-
     @Async("asyncExecutor")
-    public void notifyPayee(IPayee payee) {
+    public void notifyPayee(IPayee payee, RestTemplate restTemplate) {
 
         String notifyApiURL =
                 "http://o4d9z.mocklab.io/notify";
