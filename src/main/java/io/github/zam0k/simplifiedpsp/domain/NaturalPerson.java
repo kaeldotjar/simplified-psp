@@ -2,10 +2,8 @@ package io.github.zam0k.simplifiedpsp.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
-import org.hibernate.validator.constraints.br.CPF;
 
 import javax.persistence.*;
-import javax.validation.constraints.Email;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -22,13 +20,12 @@ public final class NaturalPerson implements IPayer, IPayee {
     private Long id;
     @Column(name = "full_name", nullable = false, length = 200)
     private String fullName;
-    @Column(nullable = false, unique = true, length = 14)
-    @CPF(message = "Invalid cpf format")
+    @Column(nullable = false, unique = true, length = 14, updatable = false)
     private String cpf;
     @Column(nullable = false, unique = true)
-    @Email(message = "Invalid email format")
     private String email;
     @JsonProperty(access = WRITE_ONLY)
+    @Column(nullable = false)
     private String password;
     @Column(nullable = false)
     private BigDecimal balance;
