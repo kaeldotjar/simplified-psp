@@ -1,10 +1,7 @@
 package io.github.zam0k.simplifiedpsp.domain;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -14,6 +11,7 @@ import java.util.List;
 @Table(name = "juridical_person")
 @Getter @Setter @EqualsAndHashCode
 @NoArgsConstructor
+@AllArgsConstructor
 public final class JuridicalPerson implements IPayee {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)

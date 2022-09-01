@@ -1,5 +1,6 @@
 package io.github.zam0k.simplifiedpsp.controllers.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -12,12 +13,13 @@ import java.math.BigDecimal;
 import java.util.List;
 
 @Getter @Setter @ToString
+@AllArgsConstructor
 public class JuridicalPersonDTO {
+    @NotBlank(message = "Full Name cannot be empty")
+    private String fullName;
     @CNPJ(message = "Invalid cnpj format")
     @NotBlank(message = "Cnpj cannot be empty")
     private String cnpj;
-    @NotBlank(message = "Full Name cannot be empty")
-    private String fullName;
     @Email(message = "Invalid email format")
     @NotBlank(message = "Email cannot be empty")
     private String email;
