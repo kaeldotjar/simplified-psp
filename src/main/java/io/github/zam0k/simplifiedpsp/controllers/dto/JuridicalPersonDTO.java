@@ -27,7 +27,7 @@ public class JuridicalPersonDTO {
     private String password;
     @NotNull(message = "Balance cannot be null")
     private BigDecimal balance;
-    @NotBlank(message = "Juridical Person must have at least one owner")
+    @NotNull(message = "Juridical Person must have at least one owner")
     private List<NaturalPersonDTO> owners;
 
 }
