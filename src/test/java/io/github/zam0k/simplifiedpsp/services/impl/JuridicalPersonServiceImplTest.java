@@ -1,11 +1,11 @@
 package io.github.zam0k.simplifiedpsp.services.impl;
 
 import io.github.zam0k.simplifiedpsp.controllers.dto.JuridicalPersonDTO;
-import io.github.zam0k.simplifiedpsp.controllers.dto.NaturalPersonDTO;
 import io.github.zam0k.simplifiedpsp.domain.JuridicalPerson;
 import io.github.zam0k.simplifiedpsp.domain.NaturalPerson;
 import io.github.zam0k.simplifiedpsp.repositories.JuridicalPersonRepository;
 import io.github.zam0k.simplifiedpsp.repositories.NaturalPersonRepository;
+import io.github.zam0k.simplifiedpsp.services.exceptions.BadRequestException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -49,7 +49,6 @@ class JuridicalPersonServiceImplTest {
     @Mock
     private ModelMapper mapper;
 
-    private NaturalPersonDTO ownerDTO;
     private NaturalPerson owner;
     private JuridicalPerson entity;
     private JuridicalPersonDTO entityDTO;
@@ -58,23 +57,13 @@ class JuridicalPersonServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        List<NaturalPerson> allOwners = new ArrayList<>();
-        List<NaturalPersonDTO> allOwnersDTO = new ArrayList<>();
-        List<JuridicalPerson> allShops = new ArrayList<>();
-
         closeable = MockitoAnnotations.openMocks(this);
-        ownerDTO = new NaturalPersonDTO(OWNER_ID, OWNER_CPF, OWNER_FULL_NAME, OWNER_EMAIL,
-                OWNER_PASSWORD, OWNER_BALANCE);
         owner = new NaturalPerson(OWNER_ID, OWNER_CPF, OWNER_FULL_NAME, OWNER_EMAIL,
-                OWNER_PASSWORD, OWNER_BALANCE, null);
+                OWNER_PASSWORD, OWNER_BALANCE, new ArrayList<>());
 
-        allOwners.add(owner);
-        entity = new JuridicalPerson(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE, allOwners);
-        entityDTO = new JuridicalPersonDTO(FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE, allOwnersDTO);
-        optionalEntity = Optional.of(new JuridicalPerson(ID, FULL_NAME, CNPJ, EMAIL,
-                PASSWORD, BALANCE, allOwners));
-
-        owner.setShops(allShops);
+        entity = new JuridicalPerson(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE, new ArrayList<>());
+        entityDTO = new JuridicalPersonDTO(FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE, new ArrayList<>());
+        optionalEntity = Optional.of(entity);
     }
 
     @AfterEach
@@ -143,6 +132,42 @@ class JuridicalPersonServiceImplTest {
     }
 
     @Test
-    void addNewOwner() {
+    void whenAddNewOwnerThenReturnSuccess() {
+        NaturalPerson newOwner = new NaturalPerson(3L, OWNER_FULL_NAME, OWNER_CPF, OWNER_EMAIL, OWNER_PASSWORD,
+                OWNER_BALANCE, new ArrayList<>());
+        when(repository.findById(any())).thenReturn(optionalEntity);
+        when(ownerRepository.findById(3L)).thenReturn(Optional.ofNullable(newOwner));
+        when(repository.save(any())).thenReturn(entity);
+
+        service.addNewOwner(ID, 3L);
+
+        assertAll(
+                () -> assertEquals(1, entity.getOwners().size()),
+                () -> assertEquals(NaturalPerson.class, entity.getOwners().get(0).getClass()),
+                () -> assertEquals(3L, entity.getOwners().get(0).getId()),
+                () -> assertEquals(OWNER_FULL_NAME, entity.getOwners().get(0).getFullName()),
+                () -> assertEquals(OWNER_CPF, entity.getOwners().get(0).getCpf()),
+                () -> assertEquals(OWNER_EMAIL, entity.getOwners().get(0).getEmail()),
+                () -> assertEquals(OWNER_PASSWORD, entity.getOwners().get(0).getPassword()),
+                () -> assertEquals(OWNER_BALANCE, entity.getOwners().get(0).getBalance())
+        );
+    }
+
+    @Test
+    void whenAddNewOwnerThenReturnBadRequest() {
+        when(repository.findById(any())).thenReturn(optionalEntity);
+        when(ownerRepository.findById(OWNER_ID)).thenReturn(Optional.ofNullable(owner));
+        when(repository.save(any())).thenReturn(entity);
+        entity.getOwners().add(owner);
+        owner.getShops().add(entity);
+
+        try {
+            service.addNewOwner(ID, OWNER_ID);
+        } catch (Exception ex) {
+            assertAll(
+                    () -> assertEquals(BadRequestException.class, ex.getClass()),
+                    () -> assertEquals("Owner already exists", ex.getMessage())
+            );
+        }
     }
 }
