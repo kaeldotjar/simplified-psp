@@ -106,7 +106,7 @@ class JuridicalPersonServiceImplTest {
     }
 
     @Test
-    void findAll() {
+    void whenFindAllThenReturnShopList() {
         when(repository.findAll()).thenReturn(List.of(entity));
 
         List<JuridicalPerson> response = service.findAll();
@@ -125,7 +125,21 @@ class JuridicalPersonServiceImplTest {
     }
 
     @Test
-    void findOneById() {
+    void whenFindByIdThenReturnShop() {
+        when(repository.findById(any())).thenReturn(optionalEntity);
+
+        JuridicalPerson response = service.findOneById(ID);
+
+        assertAll(
+                () -> assertNotNull(response),
+                () -> assertEquals(JuridicalPerson.class, response.getClass()),
+                () -> assertEquals(ID, response.getId()),
+                () -> assertEquals(FULL_NAME, response.getFullName()),
+                () -> assertEquals(CNPJ, response.getCnpj()),
+                () -> assertEquals(EMAIL, response.getEmail()),
+                () -> assertEquals(PASSWORD, response.getPassword()),
+                () -> assertEquals(BALANCE, response.getBalance())
+        );
     }
 
     @Test
