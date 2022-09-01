@@ -15,7 +15,6 @@ import io.github.zam0k.simplifiedpsp.utils.PaymentNotifier;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -38,9 +37,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final JuridicalPersonRepository juridicalPersonRepository;
     private final ModelMapper mapper;
     private final RestTemplate restTemplate;
-
-    @Autowired
-    private PaymentNotifier notifier;
+    private final PaymentNotifier notifier;
 
     @Override
     public Transaction create(TransactionDTO entity) {
@@ -61,17 +58,15 @@ public class TransactionServiceImpl implements TransactionService {
     private Transaction executeTransaction(Transaction transaction, BigDecimal value, IPayer payer, IPayee payee) {
         payee.receiveValue(value);
         payer.removeValue(value);
-
         authorizeTransaction();
 
-        // TO-DO: find a way to optimize this so it doesn't take 8 seconds to complete the transaction
-        this.notifyPayee(payee);
+        notifyPayee(payee);
 
         return repository.save(transaction);
     }
 
     private void notifyPayee(IPayee payee) {
-        notifier.notifyPayee(payee);
+        notifier.notifyPayee(payee, restTemplate);
     }
 
     private void authorizeTransaction() {
