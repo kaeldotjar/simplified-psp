@@ -40,7 +40,7 @@ public class TransactionServiceImpl implements TransactionService {
     private final ShopkeeperUserRepository shopkeeperUserRepository;
 
     @Override
-    public Transaction create(TransactionDTO entity) {
+    public TransactionDTO create(TransactionDTO entity) {
 
         BigDecimal value = entity.getValue();
         IPayer payer = getPayer(entity);
@@ -55,14 +55,14 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Transactional
-    private Transaction executeTransaction(Transaction transaction, BigDecimal value, IPayer payer, IPayee payee) {
+    private TransactionDTO executeTransaction(Transaction transaction, BigDecimal value, IPayer payer, IPayee payee) {
         payee.receiveValue(value);
         payer.removeValue(value);
         authorizeTransaction();
 
         notifyPayee(payee);
 
-        return repository.save(transaction);
+        return mapper.map(repository.save(transaction), TransactionDTO.class);
     }
 
     private void notifyPayee(IPayee payee) {

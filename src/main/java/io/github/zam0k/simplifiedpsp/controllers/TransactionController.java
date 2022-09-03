@@ -1,7 +1,6 @@
 package io.github.zam0k.simplifiedpsp.controllers;
 
 import io.github.zam0k.simplifiedpsp.controllers.dto.TransactionDTO;
-import io.github.zam0k.simplifiedpsp.domain.Transaction;
 import io.github.zam0k.simplifiedpsp.services.TransactionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,8 +25,8 @@ public class TransactionController {
     private ApplicationEventPublisher publisher;
 
     @PostMapping
-    public ResponseEntity<Transaction> create(@RequestBody TransactionDTO transaction) {
-        Transaction newEntity = service.create(transaction);
+    public ResponseEntity<TransactionDTO> create(@RequestBody TransactionDTO transaction) {
+        TransactionDTO newEntity = service.create(transaction);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}").buildAndExpand(newEntity.getId()).toUri();
 
