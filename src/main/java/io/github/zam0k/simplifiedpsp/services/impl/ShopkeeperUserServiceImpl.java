@@ -7,7 +7,6 @@ import io.github.zam0k.simplifiedpsp.services.ShopkeeperUserService;
 import io.github.zam0k.simplifiedpsp.services.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,9 +16,7 @@ import java.util.List;
 public class ShopkeeperUserServiceImpl implements ShopkeeperUserService {
 
     private final ModelMapper mapper;
-    @Autowired
-    private ShopkeeperUserRepository repository;
-
+    private final ShopkeeperUserRepository repository;
 
     @Override
     public ShopkeeperUser save(ShopkeeperUserDTO entity) {

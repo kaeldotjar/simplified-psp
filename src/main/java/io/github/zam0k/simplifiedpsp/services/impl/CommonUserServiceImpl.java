@@ -7,7 +7,6 @@ import io.github.zam0k.simplifiedpsp.services.CommonUserService;
 import io.github.zam0k.simplifiedpsp.services.exceptions.BadRequestException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -17,9 +16,7 @@ import java.util.Optional;
 public class CommonUserServiceImpl implements CommonUserService {
 
     private final ModelMapper mapper;
-
-    @Autowired
-    private CommonUserRepository repository;
+    private final CommonUserRepository repository;
 
     @Override
     public CommonUser save(CommonUserDTO entity) {
