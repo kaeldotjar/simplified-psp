@@ -1,12 +1,9 @@
 package io.github.zam0k.simplifiedpsp.domain;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-
-import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
 @Entity
 @Table(name = "common_user")
@@ -23,7 +20,6 @@ public final class CommonUser implements IPayer, IPayee {
     private String cpf;
     @Column(nullable = false, unique = true)
     private String email;
-    @JsonProperty(access = WRITE_ONLY)
     @Column(nullable = false)
     private String password;
     @Column(nullable = false)

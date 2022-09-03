@@ -19,7 +19,7 @@ public class CommonUserServiceImpl implements CommonUserService {
     private final CommonUserRepository repository;
 
     @Override
-    public CommonUser save(CommonUserDTO entity) {
+    public CommonUserDTO save(CommonUserDTO entity) {
         Optional<CommonUser> cpfAlreadyExists = repository.findByCpf(entity.getCpf());
 
         if(cpfAlreadyExists.isPresent())
@@ -30,6 +30,8 @@ public class CommonUserServiceImpl implements CommonUserService {
         if (emailAlreadyExists.isPresent())
             throw new BadRequestException("Email must be unique");
 
-        return repository.save(mapper.map(entity, CommonUser.class));
+        CommonUser commonUser = repository.save(mapper.map(entity, CommonUser.class));
+
+        return mapper.map(commonUser, CommonUserDTO.class);
     }
 }
