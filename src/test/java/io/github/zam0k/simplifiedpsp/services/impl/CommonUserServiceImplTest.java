@@ -4,13 +4,12 @@ import io.github.zam0k.simplifiedpsp.controllers.dto.CommonUserDTO;
 import io.github.zam0k.simplifiedpsp.domain.CommonUser;
 import io.github.zam0k.simplifiedpsp.repositories.CommonUserRepository;
 import io.github.zam0k.simplifiedpsp.services.exceptions.BadRequestException;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
@@ -18,8 +17,8 @@ import java.math.BigDecimal;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,26 +42,17 @@ class CommonUserServiceImplTest {
     private CommonUser entity;
     private CommonUserDTO entityDTO;
     private Optional<CommonUser> optionalEntity;
-    private AutoCloseable closeable;
 
     @BeforeEach
     void setUp() {
-        closeable = MockitoAnnotations.openMocks(this);
         entity = new CommonUser(ID, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE);
         entityDTO = new CommonUserDTO(ID, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE);
         optionalEntity = Optional.of(entity);
     }
 
-    @AfterEach
-    void tearDown() throws Exception {
-        closeable.close();
-    }
-
     @Test
     void whenSaveThenReturnSuccess() {
-        when(repository.findByCpf(any())).thenReturn(Optional.empty());
-        when(repository.findByEmail(any())).thenReturn(Optional.empty());
-        when(repository.save(any())).thenReturn(entity);
+        Mockito.when(repository.save(any())).thenReturn(entity);
 
         CommonUser response = service.save(entityDTO);
 

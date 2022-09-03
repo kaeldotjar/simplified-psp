@@ -3,13 +3,11 @@ package io.github.zam0k.simplifiedpsp.services.impl;
 import io.github.zam0k.simplifiedpsp.controllers.dto.ShopkeeperUserDTO;
 import io.github.zam0k.simplifiedpsp.domain.ShopkeeperUser;
 import io.github.zam0k.simplifiedpsp.repositories.ShopkeeperUserRepository;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
 
@@ -42,19 +40,12 @@ class ShopkeeperUserServiceImplTest {
     private ShopkeeperUser entity;
     private ShopkeeperUserDTO entityDTO;
     private Optional<ShopkeeperUser> optionalEntity;
-    private AutoCloseable closeable;
 
     @BeforeEach
     void setUp() {
-        closeable = MockitoAnnotations.openMocks(this);
         entity = new ShopkeeperUser(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
         entityDTO = new ShopkeeperUserDTO(FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
         optionalEntity = Optional.of(entity);
-    }
-
-    @AfterEach
-    void tearDown() throws Exception {
-        closeable.close();
     }
 
     @Test
