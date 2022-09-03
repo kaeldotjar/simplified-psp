@@ -64,6 +64,9 @@ class TransactionServiceImplTest {
     private Transaction transaction;
     private CommonUser payer;
     private ShopkeeperUser payee;
+    private Optional<CommonUser> optionalPayer;
+
+
 
     @BeforeEach
     void setUp() {
@@ -73,13 +76,13 @@ class TransactionServiceImplTest {
                 "", PAYER_BALANCE);
         payee = new ShopkeeperUser(PAYEE_ID, "", "",
                 "", "", PAYEE_BALANCE);
-
+        optionalPayer = Optional.of(payer);
     }
 
 
     @Test
     void whenSaveTransactionReturnSuccess() {
-        when(payerRepository.findById(any())).thenReturn(Optional.of(payer));
+        when(payerRepository.findById(any())).thenReturn(optionalPayer);
         when(payeeRepository.findById(any())).thenReturn(Optional.of(payee));
         when(restTemplate.getForEntity(anyString(), any())).thenReturn(new ResponseEntity<>(OK));
         doNothing().when(notifier).notifyPayee(any(), any());
@@ -87,11 +90,16 @@ class TransactionServiceImplTest {
 
         Transaction response = service.create(transactionDto);
 
+        System.out.println(payer.getBalance());
+
         assertAll(
                 () -> assertNotNull(response),
                 () -> assertEquals(Transaction.class, response.getClass()),
                 () -> assertEquals(TRANS_ID, response.getId()),
-                () -> assertEquals(BigDecimal.valueOf(10.00), response.getValue())
+                () -> assertEquals(TRANS_BALANCE, response.getValue()),
+                () -> assertEquals(PAYEE_ID, response.getPayee()),
+                () -> assertEquals(PAYER_ID, response.getPayer()),
+                () -> assertEquals(transaction.getTimestamp(), response.getTimestamp())
         );
     }
 
