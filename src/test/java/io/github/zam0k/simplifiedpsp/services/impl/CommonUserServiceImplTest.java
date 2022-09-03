@@ -1,17 +1,18 @@
 package io.github.zam0k.simplifiedpsp.services.impl;
 
-import io.github.zam0k.simplifiedpsp.controllers.dto.NaturalPersonDTO;
-import io.github.zam0k.simplifiedpsp.domain.NaturalPerson;
-import io.github.zam0k.simplifiedpsp.repositories.NaturalPersonRepository;
+import io.github.zam0k.simplifiedpsp.controllers.dto.CommonUserDTO;
+import io.github.zam0k.simplifiedpsp.domain.CommonUser;
+import io.github.zam0k.simplifiedpsp.repositories.CommonUserRepository;
 import io.github.zam0k.simplifiedpsp.services.exceptions.BadRequestException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
-import org.springframework.boot.test.context.SpringBootTest;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -21,8 +22,8 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 
-@SpringBootTest
-class NaturalPersonServiceImplTest {
+@ExtendWith(MockitoExtension.class)
+class CommonUserServiceImplTest {
 
     public final static Long ID = 1L;
     public final static String FULL_NAME = "subject name";
@@ -32,24 +33,24 @@ class NaturalPersonServiceImplTest {
     public final static BigDecimal BALANCE = BigDecimal.valueOf(100.00);
 
     @InjectMocks
-    private NaturalPersonServiceImpl service;
+    private CommonUserServiceImpl service;
 
     @Mock
-    private NaturalPersonRepository repository;
+    private CommonUserRepository repository;
     @Mock
     private ModelMapper mapper;
 
-    private NaturalPerson entity;
-    private NaturalPersonDTO entityDTO;
-    private Optional<NaturalPerson> optionalEntity;
+    private CommonUser entity;
+    private CommonUserDTO entityDTO;
+    private Optional<CommonUser> optionalEntity;
     private AutoCloseable closeable;
 
     @BeforeEach
     void setUp() {
         closeable = MockitoAnnotations.openMocks(this);
-        entity = new NaturalPerson(ID, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE, null);
-        entityDTO = new NaturalPersonDTO(ID, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE);
-        optionalEntity = Optional.of(new NaturalPerson(ID, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE, null));
+        entity = new CommonUser(ID, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE);
+        entityDTO = new CommonUserDTO(ID, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE);
+        optionalEntity = Optional.of(entity);
     }
 
     @AfterEach
@@ -59,14 +60,15 @@ class NaturalPersonServiceImplTest {
 
     @Test
     void whenSaveThenReturnSuccess() {
+        when(repository.findByCpf(any())).thenReturn(Optional.empty());
+        when(repository.findByEmail(any())).thenReturn(Optional.empty());
         when(repository.save(any())).thenReturn(entity);
 
-        NaturalPerson response = service.save(entityDTO);
-
+        CommonUser response = service.save(entityDTO);
 
         assertAll(
                 () -> assertNotNull(response),
-                () -> assertEquals(NaturalPerson.class, response.getClass()),
+                () -> assertEquals(CommonUser.class, response.getClass()),
                 () -> assertEquals(ID, response.getId()),
                 () -> assertEquals(FULL_NAME, response.getFullName()),
                 () -> assertEquals(CPF, response.getCpf()),
