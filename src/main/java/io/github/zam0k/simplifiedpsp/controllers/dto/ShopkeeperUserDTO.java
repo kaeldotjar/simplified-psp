@@ -10,11 +10,10 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-import java.util.List;
 
 @Getter @Setter @ToString
 @AllArgsConstructor
-public class JuridicalPersonDTO {
+public class ShopkeeperUserDTO {
     @NotBlank(message = "Full Name cannot be empty")
     private String fullName;
     @CNPJ(message = "Invalid cnpj format")
@@ -27,7 +26,5 @@ public class JuridicalPersonDTO {
     private String password;
     @NotNull(message = "Balance cannot be null")
     private BigDecimal balance;
-    @NotNull(message = "Juridical Person must have at least one owner")
-    private List<NaturalPersonDTO> owners;
 
 }

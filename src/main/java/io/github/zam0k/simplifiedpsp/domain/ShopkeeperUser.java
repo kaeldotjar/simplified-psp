@@ -5,14 +5,13 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.util.List;
 
 @Entity
-@Table(name = "juridical_person")
+@Table(name = "shopkeeper_user")
 @Getter @Setter @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public final class JuridicalPerson implements IPayee {
+public final class ShopkeeperUser implements IPayee {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(updatable = false, nullable = false)
@@ -28,19 +27,6 @@ public final class JuridicalPerson implements IPayee {
     private String password;
     @Column(nullable = false)
     private BigDecimal balance;
-
-    @ManyToMany(mappedBy = "shops")
-    private List<NaturalPerson> owners;
-
-    public void addOwner(NaturalPerson person) {
-        owners.add(person);
-        person.getShops().add(this);
-    }
-
-    public void addOwners(List<NaturalPerson> person) {
-        owners.addAll(person);
-        person.forEach(p -> p.getShops().add(this));
-    }
 
     @Override
     public void receiveValue(BigDecimal value) {
