@@ -10,6 +10,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -19,21 +20,25 @@ public class ShopkeeperUserServiceImpl implements ShopkeeperUserService {
     private final ShopkeeperUserRepository repository;
 
     @Override
-    public ShopkeeperUser save(ShopkeeperUserDTO entity) {
+    public ShopkeeperUserDTO save(ShopkeeperUserDTO entity) {
 
-        ShopkeeperUser shop = mapper.map(entity, ShopkeeperUser.class);
-
-        return repository.save(shop);
+        ShopkeeperUser shop = repository.save(mapper.map(entity, ShopkeeperUser.class));
+        return mapper.map(shop, ShopkeeperUserDTO.class);
     }
 
     @Override
-    public List<ShopkeeperUser> findAll() {
-        return repository.findAll();
+    public List<ShopkeeperUserDTO> findAll() {
+
+        return repository.findAll().stream().map(
+                entity -> mapper.map(entity, ShopkeeperUserDTO.class)
+        ).collect(Collectors.toList());
     }
 
     @Override
-    public ShopkeeperUser findOneById(Long id) {
-        return repository.findById(id).orElseThrow(NotFoundException::new);
+    public ShopkeeperUserDTO findOneById(Long id) {
+        ShopkeeperUser entity = repository.findById(id).orElseThrow(NotFoundException::new);
+
+        return mapper.map(entity, ShopkeeperUserDTO.class);
     }
 
 }

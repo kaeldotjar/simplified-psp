@@ -44,19 +44,22 @@ class ShopkeeperUserServiceImplTest {
     @BeforeEach
     void setUp() {
         entity = new ShopkeeperUser(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
-        entityDTO = new ShopkeeperUserDTO(FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
+        entityDTO = new ShopkeeperUserDTO(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
         optionalEntity = Optional.of(entity);
     }
 
     @Test
     void whenSaveThenReturnSuccess() {
+        when(mapper.map(any(ShopkeeperUserDTO.class), any())).thenReturn(entity);
+        when(mapper.map(any(ShopkeeperUser.class), any())).thenReturn(entityDTO);
+
         when(repository.save(any())).thenReturn(entity);
 
-        ShopkeeperUser response = service.save(entityDTO);
+        ShopkeeperUserDTO response = service.save(entityDTO);
 
         assertAll(
                 () -> assertNotNull(response),
-                () -> assertEquals(ShopkeeperUser.class, response.getClass()),
+                () -> assertEquals(ShopkeeperUserDTO.class, response.getClass()),
                 () -> assertEquals(ID, response.getId()),
                 () -> assertEquals(FULL_NAME, response.getFullName()),
                 () -> assertEquals(CNPJ, response.getCnpj()),
@@ -68,13 +71,14 @@ class ShopkeeperUserServiceImplTest {
 
     @Test
     void whenFindAllThenReturnShopList() {
+        when(mapper.map(any(ShopkeeperUser.class), any())).thenReturn(entityDTO);
         when(repository.findAll()).thenReturn(List.of(entity));
 
-        List<ShopkeeperUser> response = service.findAll();
+        List<ShopkeeperUserDTO> response = service.findAll();
 
         assertAll(
                 () -> assertEquals(1, response.size()),
-                () -> assertEquals(ShopkeeperUser.class, response.get(0).getClass()),
+                () -> assertEquals(ShopkeeperUserDTO.class, response.get(0).getClass()),
                 () -> assertEquals(ID, response.get(0).getId()),
                 () -> assertEquals(FULL_NAME, response.get(0).getFullName()),
                 () -> assertEquals(CNPJ, response.get(0).getCnpj()),
@@ -87,13 +91,14 @@ class ShopkeeperUserServiceImplTest {
 
     @Test
     void whenFindByIdThenReturnShop() {
+        when(mapper.map(any(ShopkeeperUser.class), any())).thenReturn(entityDTO);
         when(repository.findById(any())).thenReturn(optionalEntity);
 
-        ShopkeeperUser response = service.findOneById(ID);
+        ShopkeeperUserDTO response = service.findOneById(ID);
 
         assertAll(
                 () -> assertNotNull(response),
-                () -> assertEquals(ShopkeeperUser.class, response.getClass()),
+                () -> assertEquals(ShopkeeperUserDTO.class, response.getClass()),
                 () -> assertEquals(ID, response.getId()),
                 () -> assertEquals(FULL_NAME, response.getFullName()),
                 () -> assertEquals(CNPJ, response.getCnpj()),
