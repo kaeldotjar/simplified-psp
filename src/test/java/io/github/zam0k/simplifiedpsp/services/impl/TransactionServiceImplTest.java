@@ -35,7 +35,7 @@ import static org.springframework.http.HttpStatus.OK;
 @ExtendWith(SpringExtension.class)
 class TransactionServiceImplTest {
     public final static Long TRANS_ID = 3L;
-    public final static BigDecimal TRANS_BALANCE = BigDecimal.valueOf(100.00);
+    public final static BigDecimal TRANS_BALANCE = BigDecimal.valueOf(10.00);
 
     public final static Long PAYER_ID = 2L;
     public final static BigDecimal PAYER_BALANCE = BigDecimal.valueOf(100.00);
