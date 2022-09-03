@@ -1,8 +1,8 @@
 package io.github.zam0k.simplifiedpsp.controllers;
 
-import io.github.zam0k.simplifiedpsp.controllers.dto.NaturalPersonDTO;
-import io.github.zam0k.simplifiedpsp.domain.NaturalPerson;
-import io.github.zam0k.simplifiedpsp.services.NaturalPersonService;
+import io.github.zam0k.simplifiedpsp.controllers.dto.CommonUserDTO;
+import io.github.zam0k.simplifiedpsp.domain.CommonUser;
+import io.github.zam0k.simplifiedpsp.services.CommonUserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,12 +17,12 @@ import java.net.URI;
 @RestController
 @RequestMapping("/natural-person")
 @RequiredArgsConstructor
-public class NaturalPersonController {
-    private final NaturalPersonService service;
+public class CommonUserController {
+    private final CommonUserService service;
 
     @PostMapping
-    public ResponseEntity<NaturalPerson> create(@Valid @RequestBody NaturalPersonDTO entity) {
-        NaturalPerson newEntity = service.save(entity);
+    public ResponseEntity<CommonUser> create(@Valid @RequestBody CommonUserDTO entity) {
+        CommonUser newEntity = service.save(entity);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}").buildAndExpand(newEntity.getId()).toUri();
         return ResponseEntity.created(uri).build();

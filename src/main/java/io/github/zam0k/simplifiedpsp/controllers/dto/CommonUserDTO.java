@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 
 @Getter @Setter @ToString
 @AllArgsConstructor
-public class NaturalPersonDTO {
+public class CommonUserDTO {
     @Null
     private Long id;
     @CPF(message = "Invalid cpf format")

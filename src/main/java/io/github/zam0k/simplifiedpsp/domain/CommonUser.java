@@ -5,15 +5,14 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.util.List;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
 @Entity
-@Table(name = "natural_person")
+@Table(name = "common_user")
 @Setter @Getter @EqualsAndHashCode
 @NoArgsConstructor @AllArgsConstructor
-public final class NaturalPerson implements IPayer, IPayee {
+public final class CommonUser implements IPayer, IPayee {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(updatable = false, nullable = false)
@@ -29,13 +28,6 @@ public final class NaturalPerson implements IPayer, IPayee {
     private String password;
     @Column(nullable = false)
     private BigDecimal balance;
-
-    @JsonProperty(access = WRITE_ONLY)
-    @ManyToMany
-    @JoinTable(name = "belongs_to",
-    joinColumns = @JoinColumn(name = "natural_person_id"),
-    inverseJoinColumns = @JoinColumn(name = "juridical_person_id"))
-    private List<JuridicalPerson> shops;
 
     @Override
     public void receiveValue(BigDecimal value) {
