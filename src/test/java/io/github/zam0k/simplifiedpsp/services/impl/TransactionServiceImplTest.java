@@ -36,6 +36,7 @@ import static org.springframework.http.HttpStatus.OK;
 class TransactionServiceImplTest {
     public final static Long TRANS_ID = 3L;
     public final static BigDecimal TRANS_BALANCE = BigDecimal.valueOf(10.00);
+    public final static LocalDateTime TRANS_TIMESTAMP = LocalDateTime.now();
 
     public final static Long PAYER_ID = 2L;
     public final static BigDecimal PAYER_BALANCE = BigDecimal.valueOf(100.00);
@@ -70,8 +71,8 @@ class TransactionServiceImplTest {
 
     @BeforeEach
     void setUp() {
-        transactionDto = new TransactionDTO(PAYER_ID, PAYEE_ID, TRANS_BALANCE);
-        transaction = new Transaction(TRANS_ID, PAYER_ID, PAYEE_ID, TRANS_BALANCE, LocalDateTime.now());
+        transactionDto = new TransactionDTO(TRANS_ID, PAYER_ID, PAYEE_ID, TRANS_BALANCE, TRANS_TIMESTAMP);
+        transaction = new Transaction(TRANS_ID, PAYER_ID, PAYEE_ID, TRANS_BALANCE, TRANS_TIMESTAMP);
         payer = new CommonUser(PAYER_ID, "", "", "",
                 "", PAYER_BALANCE);
         payee = new ShopkeeperUser(PAYEE_ID, "", "",
@@ -88,18 +89,18 @@ class TransactionServiceImplTest {
         doNothing().when(notifier).notifyPayee(any(), any());
         when(repository.save(any())).thenReturn(transaction);
 
-        Transaction response = service.create(transactionDto);
+        when(mapper.map(any(Transaction.class), any())).thenReturn(transactionDto);
 
-        System.out.println(payer.getBalance());
+        TransactionDTO response = service.create(transactionDto);
 
         assertAll(
                 () -> assertNotNull(response),
-                () -> assertEquals(Transaction.class, response.getClass()),
+                () -> assertEquals(TransactionDTO.class, response.getClass()),
                 () -> assertEquals(TRANS_ID, response.getId()),
                 () -> assertEquals(TRANS_BALANCE, response.getValue()),
                 () -> assertEquals(PAYEE_ID, response.getPayee()),
                 () -> assertEquals(PAYER_ID, response.getPayer()),
-                () -> assertEquals(transaction.getTimestamp(), response.getTimestamp())
+                () -> assertEquals(TRANS_TIMESTAMP, response.getTimestamp())
         );
     }
 

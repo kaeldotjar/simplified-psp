@@ -52,13 +52,15 @@ class CommonUserServiceImplTest {
 
     @Test
     void whenSaveThenReturnSuccess() {
+        when(mapper.map(any(CommonUserDTO.class), any())).thenReturn(entity);
+        when(mapper.map(any(CommonUser.class), any())).thenReturn(entityDTO);
         Mockito.when(repository.save(any())).thenReturn(entity);
 
-        CommonUser response = service.save(entityDTO);
+        CommonUserDTO response = service.save(entityDTO);
 
         assertAll(
                 () -> assertNotNull(response),
-                () -> assertEquals(CommonUser.class, response.getClass()),
+                () -> assertEquals(CommonUserDTO.class, response.getClass()),
                 () -> assertEquals(ID, response.getId()),
                 () -> assertEquals(FULL_NAME, response.getFullName()),
                 () -> assertEquals(CPF, response.getCpf()),
