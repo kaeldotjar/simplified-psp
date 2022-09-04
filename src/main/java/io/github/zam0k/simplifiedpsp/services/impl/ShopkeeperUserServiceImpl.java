@@ -4,13 +4,15 @@ import io.github.zam0k.simplifiedpsp.controllers.dto.ShopkeeperUserDTO;
 import io.github.zam0k.simplifiedpsp.domain.ShopkeeperUser;
 import io.github.zam0k.simplifiedpsp.repositories.ShopkeeperUserRepository;
 import io.github.zam0k.simplifiedpsp.services.ShopkeeperUserService;
+import io.github.zam0k.simplifiedpsp.services.exceptions.BadRequestException;
 import io.github.zam0k.simplifiedpsp.services.exceptions.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,16 +24,23 @@ public class ShopkeeperUserServiceImpl implements ShopkeeperUserService {
     @Override
     public ShopkeeperUserDTO save(ShopkeeperUserDTO entity) {
 
+        Optional<ShopkeeperUser> cnpj = repository.findByCnpj(entity.getCnpj());
+
+        if(cnpj.isPresent()) throw new BadRequestException("Cnpj already taken");
+
+        Optional<ShopkeeperUser> email = repository.findByEmail(entity.getEmail());
+
+        if(email.isPresent()) throw new BadRequestException("Email already taken");
+
         ShopkeeperUser shop = repository.save(mapper.map(entity, ShopkeeperUser.class));
+
         return mapper.map(shop, ShopkeeperUserDTO.class);
     }
 
     @Override
-    public List<ShopkeeperUserDTO> findAll() {
+    public Page<ShopkeeperUserDTO> findAll(Pageable pageable) {
 
-        return repository.findAll().stream().map(
-                entity -> mapper.map(entity, ShopkeeperUserDTO.class)
-        ).collect(Collectors.toList());
+        return repository.findAll(pageable).map(e -> mapper.map(e, ShopkeeperUserDTO.class));
     }
 
     @Override
