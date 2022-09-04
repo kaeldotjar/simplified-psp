@@ -14,7 +14,7 @@ import javax.validation.Valid;
 import java.net.URI;
 
 @RestController
-@RequestMapping("/common-user")
+@RequestMapping("/common-users")
 @RequiredArgsConstructor
 public class CommonUserController {
     private final CommonUserService service;
