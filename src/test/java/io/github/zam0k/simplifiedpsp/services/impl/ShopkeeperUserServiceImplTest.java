@@ -10,6 +10,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -71,22 +75,26 @@ class ShopkeeperUserServiceImplTest {
 
     @Test
     void whenFindAllThenReturnShopList() {
-        when(mapper.map(any(ShopkeeperUser.class), any())).thenReturn(entityDTO);
-        when(repository.findAll()).thenReturn(List.of(entity));
+        List<ShopkeeperUser> shopkeepers = List.of(entity);
+        Pageable pageable = PageRequest.of(0, 10);
 
-        List<ShopkeeperUserDTO> response = service.findAll();
+        when(mapper.map(any(ShopkeeperUser.class), any())).thenReturn(entityDTO);
+        when(repository.findAll(pageable)).thenReturn(new PageImpl<>(shopkeepers, pageable, shopkeepers.size()));
+
+        Page<ShopkeeperUserDTO> response = service.findAll(pageable);
+        ShopkeeperUserDTO firstEntityOnResponse = response.getContent().get(0);
 
         assertAll(
-                () -> assertEquals(1, response.size()),
-                () -> assertEquals(ShopkeeperUserDTO.class, response.get(0).getClass()),
-                () -> assertEquals(ID, response.get(0).getId()),
-                () -> assertEquals(FULL_NAME, response.get(0).getFullName()),
-                () -> assertEquals(CNPJ, response.get(0).getCnpj()),
-                () -> assertEquals(EMAIL, response.get(0).getEmail()),
-                () -> assertEquals(PASSWORD, response.get(0).getPassword()),
-                () -> assertEquals(BALANCE, response.get(0).getBalance())
+                () -> assertEquals(true, response.hasContent()),
+                () -> assertEquals(1, response.getNumberOfElements()),
+                () -> assertEquals(ShopkeeperUserDTO.class, firstEntityOnResponse.getClass()),
+                () -> assertEquals(ID, firstEntityOnResponse.getId()),
+                () -> assertEquals(FULL_NAME, firstEntityOnResponse.getFullName()),
+                () -> assertEquals(CNPJ, firstEntityOnResponse.getCnpj()),
+                () -> assertEquals(EMAIL, firstEntityOnResponse.getEmail()),
+                () -> assertEquals(PASSWORD, firstEntityOnResponse.getPassword()),
+                () -> assertEquals(BALANCE, firstEntityOnResponse.getBalance())
         );
-
     }
 
     @Test
