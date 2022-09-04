@@ -1,6 +1,5 @@
 package io.github.zam0k.simplifiedpsp.domain;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 
 import javax.persistence.*;
@@ -22,7 +21,6 @@ public final class ShopkeeperUser implements IPayee {
     private String cnpj;
     @Column(nullable = false, unique = true)
     private String email;
-    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     @Column(nullable = false)
     private String password;
     @Column(nullable = false)
@@ -32,4 +30,5 @@ public final class ShopkeeperUser implements IPayee {
     public void receiveValue(BigDecimal value) {
         setBalance(getBalance().add(value));
     }
+
 }
