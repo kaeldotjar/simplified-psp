@@ -9,9 +9,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/transactions")
+@RequestMapping("/api/transactions/v1")
 @RequiredArgsConstructor
 public class TransactionController {
 
@@ -27,7 +28,7 @@ public class TransactionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<TransactionDTO> findById(@PathVariable("id") Long id) {
+    public ResponseEntity<TransactionDTO> findById(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(service.findById(id));
     }
 }

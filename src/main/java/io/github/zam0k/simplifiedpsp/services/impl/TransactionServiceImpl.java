@@ -6,7 +6,7 @@ import io.github.zam0k.simplifiedpsp.domain.IPayee;
 import io.github.zam0k.simplifiedpsp.domain.IPayer;
 import io.github.zam0k.simplifiedpsp.domain.Transaction;
 import io.github.zam0k.simplifiedpsp.repositories.CommonUserRepository;
-import io.github.zam0k.simplifiedpsp.repositories.ShopkeeperUserRepository;
+import io.github.zam0k.simplifiedpsp.repositories.ShopkeeperRepository;
 import io.github.zam0k.simplifiedpsp.repositories.TransactionRepository;
 import io.github.zam0k.simplifiedpsp.services.TransactionService;
 import io.github.zam0k.simplifiedpsp.services.exceptions.BadGatewayException;
@@ -24,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Stream;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
@@ -40,10 +41,13 @@ public class TransactionServiceImpl implements TransactionService {
     private final PaymentNotifier notifier;
     private final TransactionRepository repository;
     private final CommonUserRepository commonUserRepository;
-    private final ShopkeeperUserRepository shopkeeperUserRepository;
+    private final ShopkeeperRepository shopkeeperUserRepository;
 
     @Override
     public TransactionDTO create(TransactionDTO entity) {
+
+        if(entity.getPayee() == entity.getPayer())
+            throw new BadRequestException("Cant ");
 
         BigDecimal value = entity.getValue();
         IPayer payer = getPayer(entity);
@@ -55,13 +59,13 @@ public class TransactionServiceImpl implements TransactionService {
 
         Transaction transaction = mapper.map(entity, Transaction.class);
 
-        executeTransaction(transaction, value, payer, payee);
+        executeTransaction(value, payer, payee);
 
         return mapper.map(repository.save(transaction), TransactionDTO.class);
     }
 
     @Override
-    public TransactionDTO findById(Long id) {
+    public TransactionDTO findById(UUID id) {
         Transaction transaction = repository.findById(id).orElseThrow(NotFoundException::new);
         TransactionDTO dto = mapper.map(transaction, TransactionDTO.class);
 
@@ -71,7 +75,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     @Transactional
-    private void executeTransaction(Transaction transaction, BigDecimal value, IPayer payer, IPayee payee) {
+    private void executeTransaction(BigDecimal value, IPayer payer, IPayee payee) {
         payee.receiveValue(value);
         payer.removeValue(value);
         authorizeTransaction();
@@ -100,7 +104,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     private IPayee getPayee(TransactionDTO transaction) {
-        Long payeeId = transaction.getPayee();
+        UUID payeeId = transaction.getPayee();
         return Stream.of(commonUserRepository.findById(payeeId), shopkeeperUserRepository.findById(payeeId))
                 .filter(Optional::isPresent).map(Optional::get).findFirst()
                 .orElseThrow(NotFoundException::new);
@@ -108,7 +112,7 @@ public class TransactionServiceImpl implements TransactionService {
     }
 
     private IPayer getPayer(TransactionDTO transaction) {
-        Long payerId = transaction.getPayer();
+        UUID payerId = transaction.getPayer();
         return commonUserRepository.findById(payerId).orElseThrow(NotFoundException::new);
     }
 }

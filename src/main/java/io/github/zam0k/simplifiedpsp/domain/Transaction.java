@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "transaction")
@@ -15,17 +16,17 @@ import java.time.LocalDateTime;
 @NoArgsConstructor @AllArgsConstructor
 public class Transaction {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue
     @Column(updatable = false, nullable = false)
-    private Long id;
+    private UUID id;
 
-    @Column(name = "payer_id")
-    private Long payer;
+    @Column(name = "payer_id", nullable = false)
+    private UUID payer;
 
-    @Column(name = "payee_id")
-    private Long payee;
+    @Column(name = "payee_id", nullable = false)
+    private UUID payee;
 
-    @Column(name = "`value`")
+    @Column(name = "`value`", nullable = false)
     private BigDecimal value;
 
     @Column(name = "created_at", nullable = false)
