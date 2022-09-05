@@ -1,8 +1,11 @@
 package io.github.zam0k.simplifiedpsp.controllers.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
 import org.hibernate.validator.constraints.br.CNPJ;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -12,12 +15,15 @@ import java.math.BigDecimal;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
-@Getter @Setter @ToString
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class ShopkeeperUserDTO {
+@JsonPropertyOrder({"id", "fullName", "cnpj", "email", "password", "balance"})
+@Relation(collectionRelation = "shopkeepers", itemRelation = "shopkeeper")
+public class ShopkeeperUserDTO extends RepresentationModel<ShopkeeperUserDTO> {
+    @JsonProperty("id")
     @Null(message = "Id must be null")
-    private Long id;
+    private Long key;
     @NotBlank(message = "Full Name cannot be empty")
     private String fullName;
     @CNPJ(message = "Invalid cnpj format")

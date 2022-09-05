@@ -10,7 +10,7 @@ import java.math.BigDecimal;
 @Getter @Setter @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public final class ShopkeeperUser implements IPayee {
+public class ShopkeeperUser implements IPayee {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(updatable = false, nullable = false)
