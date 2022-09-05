@@ -1,10 +1,10 @@
 package io.github.zam0k.simplifiedpsp.config;
 
 import io.github.zam0k.simplifiedpsp.controllers.dto.CommonUserDTO;
-import io.github.zam0k.simplifiedpsp.controllers.dto.ShopkeeperUserDTO;
+import io.github.zam0k.simplifiedpsp.controllers.dto.ShopkeeperDTO;
 import io.github.zam0k.simplifiedpsp.controllers.dto.TransactionDTO;
 import io.github.zam0k.simplifiedpsp.domain.CommonUser;
-import io.github.zam0k.simplifiedpsp.domain.ShopkeeperUser;
+import io.github.zam0k.simplifiedpsp.domain.Shopkeeper;
 import io.github.zam0k.simplifiedpsp.domain.Transaction;
 import org.modelmapper.ModelMapper;
 import org.springframework.context.annotation.Bean;
@@ -34,12 +34,12 @@ public class MapperConfig {
     }
 
     @Bean
-    public void configureShopkeeperUserMapper() {
-        modelMapper.createTypeMap(ShopkeeperUser.class, ShopkeeperUserDTO.class)
-                .addMapping(ShopkeeperUser::getId, ShopkeeperUserDTO::setKey);
+    public void configureShopkeeperMapper() {
+        modelMapper.createTypeMap(Shopkeeper.class, ShopkeeperDTO.class)
+                .addMapping(Shopkeeper::getId, ShopkeeperDTO::setKey);
 
-        modelMapper.createTypeMap(ShopkeeperUserDTO.class, ShopkeeperUser.class)
-                .addMapping(ShopkeeperUserDTO::getKey, ShopkeeperUser::setId);
+        modelMapper.createTypeMap(ShopkeeperDTO.class, Shopkeeper.class)
+                .addMapping(ShopkeeperDTO::getKey, Shopkeeper::setId);
     }
 
     @Bean
