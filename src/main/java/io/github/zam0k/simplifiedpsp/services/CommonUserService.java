@@ -6,8 +6,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 
+import java.util.UUID;
+
 public interface CommonUserService {
     CommonUserDTO save(CommonUserDTO entity);
-    CommonUserDTO findById(Long id);
-    PagedModel<EntityModel<TransactionDTO>> findTransactions(Long id, Pageable pageable);
+    CommonUserDTO findById(UUID id);
+    PagedModel<EntityModel<TransactionDTO>> findTransactions(UUID id, Pageable pageable);
 }

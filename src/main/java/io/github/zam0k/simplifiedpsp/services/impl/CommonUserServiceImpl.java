@@ -21,6 +21,7 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
@@ -52,7 +53,7 @@ public class CommonUserServiceImpl implements CommonUserService {
     }
 
     @Override
-    public CommonUserDTO findById(Long id) {
+    public CommonUserDTO findById(UUID id) {
         CommonUser commonUser = repository.findById(id).orElseThrow(NotFoundException::new);
         CommonUserDTO dto = mapper.map(commonUser, CommonUserDTO.class);
 
@@ -62,7 +63,7 @@ public class CommonUserServiceImpl implements CommonUserService {
     }
 
     @Override
-    public PagedModel<EntityModel<TransactionDTO>> findTransactions(Long id, Pageable pageable) {
+    public PagedModel<EntityModel<TransactionDTO>> findTransactions(UUID id, Pageable pageable) {
 
         boolean isCommonUserPresent = repository.findById(id).isPresent();
 

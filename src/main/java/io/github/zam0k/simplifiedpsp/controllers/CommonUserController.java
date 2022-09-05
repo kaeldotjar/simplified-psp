@@ -14,9 +14,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/common-users")
+@RequestMapping("/api/common-users/v1")
 @RequiredArgsConstructor
 public class CommonUserController {
     private final CommonUserService service;
@@ -30,13 +31,13 @@ public class CommonUserController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<CommonUserDTO> findById(@PathVariable("id") Long id) {
+    public ResponseEntity<CommonUserDTO> findById(@PathVariable("id") UUID id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @GetMapping("/{id}/transactions")
     public ResponseEntity<PagedModel<EntityModel<TransactionDTO>>> getUserTransactions(
-            @PathVariable("id") Long id,
+            @PathVariable("id") UUID id,
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "size", defaultValue = "10") Integer size) {
 

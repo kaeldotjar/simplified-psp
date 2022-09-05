@@ -4,6 +4,7 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Entity
 @Table(name = "common_user")
@@ -11,9 +12,9 @@ import java.math.BigDecimal;
 @NoArgsConstructor @AllArgsConstructor
 public class CommonUser implements IPayer, IPayee {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue
     @Column(updatable = false, nullable = false)
-    private Long id;
+    private UUID id;
     @Column(name = "full_name", nullable = false, length = 200)
     private String fullName;
     @Column(nullable = false, unique = true, length = 14, updatable = false)
