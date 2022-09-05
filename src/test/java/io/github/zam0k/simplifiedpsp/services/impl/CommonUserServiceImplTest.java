@@ -61,7 +61,7 @@ class CommonUserServiceImplTest {
         assertAll(
                 () -> assertNotNull(response),
                 () -> assertEquals(CommonUserDTO.class, response.getClass()),
-                () -> assertEquals(ID, response.getId()),
+                () -> assertEquals(ID, response.getKey()),
                 () -> assertEquals(FULL_NAME, response.getFullName()),
                 () -> assertEquals(CPF, response.getCpf()),
                 () -> assertEquals(EMAIL, response.getEmail()),

@@ -96,7 +96,7 @@ class TransactionServiceImplTest {
         assertAll(
                 () -> assertNotNull(response),
                 () -> assertEquals(TransactionDTO.class, response.getClass()),
-                () -> assertEquals(TRANS_ID, response.getId()),
+                () -> assertEquals(TRANS_ID, response.getKey()),
                 () -> assertEquals(TRANS_BALANCE, response.getValue()),
                 () -> assertEquals(PAYEE_ID, response.getPayee()),
                 () -> assertEquals(PAYER_ID, response.getPayer()),
