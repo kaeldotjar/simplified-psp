@@ -1,8 +1,8 @@
 package io.github.zam0k.simplifiedpsp.controllers;
 
-import io.github.zam0k.simplifiedpsp.controllers.dto.ShopkeeperUserDTO;
+import io.github.zam0k.simplifiedpsp.controllers.dto.ShopkeeperDTO;
 import io.github.zam0k.simplifiedpsp.controllers.dto.TransactionDTO;
-import io.github.zam0k.simplifiedpsp.services.ShopkeeperUserService;
+import io.github.zam0k.simplifiedpsp.services.ShopkeeperService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -15,44 +15,45 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import javax.validation.Valid;
 import java.net.URI;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/shopkeepers")
+@RequestMapping("/api/shopkeepers/v1")
 @RequiredArgsConstructor
-@ExposesResourceFor(ShopkeeperUserDTO.class)
-public class ShopkeeperUserController {
+@ExposesResourceFor(ShopkeeperDTO.class)
+public class ShopkeeperController {
 
-    private final ShopkeeperUserService service;
+    private final ShopkeeperService service;
 
     @PostMapping
-    public ResponseEntity<ShopkeeperUserDTO> create(@Valid @RequestBody ShopkeeperUserDTO entity) {
-        ShopkeeperUserDTO newEntity = service.save(entity);
+    public ResponseEntity<ShopkeeperDTO> create(@Valid @RequestBody ShopkeeperDTO entity) {
+        ShopkeeperDTO newEntity = service.save(entity);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}").buildAndExpand(newEntity.getKey()).toUri();
         return ResponseEntity.created(uri).build();
     }
 
     @GetMapping
-    public ResponseEntity<PagedModel<EntityModel<ShopkeeperUserDTO>>> findAll(
+    public ResponseEntity<PagedModel<EntityModel<ShopkeeperDTO>>> findAll(
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "size", defaultValue = "10") Integer size) {
 
         Pageable pageable = PageRequest.of(page, size);
 
-        PagedModel<EntityModel<ShopkeeperUserDTO>> all = service.findAll(pageable);
+        PagedModel<EntityModel<ShopkeeperDTO>> all = service.findAll(pageable);
         if(all.getContent().isEmpty()) return ResponseEntity.noContent().build();
 
         return ResponseEntity.ok(all);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ShopkeeperUserDTO> findOneById(@PathVariable Long id) {
+    public ResponseEntity<ShopkeeperDTO> findOneById(@PathVariable UUID id) {
         return ResponseEntity.ok(service.findById(id));
     }
 
     @GetMapping("/{id}/transactions")
     public ResponseEntity<PagedModel<EntityModel<TransactionDTO>>> getUserTransactions(
-            @PathVariable("id") Long id,
+            @PathVariable("id") UUID id,
             @RequestParam(value = "page", defaultValue = "0") Integer page,
             @RequestParam(value = "size", defaultValue = "10") Integer size) {
 

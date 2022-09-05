@@ -4,17 +4,18 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.util.UUID;
 
 @Entity
-@Table(name = "shopkeeper_user")
+@Table(name = "shopkeeper")
 @Getter @Setter @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public class ShopkeeperUser implements IPayee {
+public class Shopkeeper implements IPayee {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
+    @GeneratedValue
     @Column(updatable = false, nullable = false)
-    private Long id;
+    private UUID id;
     @Column(name = "full_name", nullable = false, length = 200)
     private String fullName;
     @Column(nullable = false, unique = true, length = 18, updatable = false)
