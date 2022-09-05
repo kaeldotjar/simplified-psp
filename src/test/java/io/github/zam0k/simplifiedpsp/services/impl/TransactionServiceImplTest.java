@@ -63,6 +63,7 @@ class TransactionServiceImplTest {
 
     private TransactionDTO transactionDto;
     private Transaction transaction;
+    private Optional<Transaction> optionalTransaction;
     private CommonUser payer;
     private ShopkeeperUser payee;
     private Optional<CommonUser> optionalPayer;
@@ -73,6 +74,7 @@ class TransactionServiceImplTest {
     void setUp() {
         transactionDto = new TransactionDTO(TRANS_ID, PAYER_ID, PAYEE_ID, TRANS_BALANCE, TRANS_TIMESTAMP);
         transaction = new Transaction(TRANS_ID, PAYER_ID, PAYEE_ID, TRANS_BALANCE, TRANS_TIMESTAMP);
+        optionalTransaction = Optional.of(transaction);
         payer = new CommonUser(PAYER_ID, "", "", "",
                 "", PAYER_BALANCE);
         payee = new ShopkeeperUser(PAYEE_ID, "", "",
@@ -144,6 +146,40 @@ class TransactionServiceImplTest {
         try {
             service.create(transactionDto);
         } catch (Exception ex) {
+            assertAll(
+                    () -> assertEquals(NotFoundException.class, ex.getClass()),
+                    () -> assertEquals("Object cannot be found", ex.getMessage())
+            );
+        }
+    }
+
+    @Test
+    void whenFindByIdReturnSuccess() {
+        when(repository.findById(TRANS_ID)).thenReturn(optionalTransaction);
+        when(mapper.map(any(Transaction.class), any())).thenReturn(transactionDto);
+
+        TransactionDTO response = service.findById(TRANS_ID);
+
+        assertAll(
+                () -> assertNotNull(response),
+                () -> assertTrue(response.hasLinks()),
+                () -> assertTrue(response.hasLink("self")),
+                () -> assertFalse(response.getLinks("self").isEmpty()),
+                () -> assertEquals(TransactionDTO.class, response.getClass()),
+                () -> assertEquals(TRANS_ID, response.getKey()),
+                () -> assertEquals(TRANS_BALANCE, response.getValue()),
+                () -> assertEquals(PAYEE_ID, response.getPayee()),
+                () -> assertEquals(PAYER_ID, response.getPayer()),
+                () -> assertEquals(TRANS_TIMESTAMP, response.getTimestamp())
+        );
+    }
+
+    @Test
+    void whenFindByIdReturnNotFoundException() {
+
+        try {
+            service.findById(TRANS_ID);
+        }catch (Exception ex) {
             assertAll(
                     () -> assertEquals(NotFoundException.class, ex.getClass()),
                     () -> assertEquals("Object cannot be found", ex.getMessage())
