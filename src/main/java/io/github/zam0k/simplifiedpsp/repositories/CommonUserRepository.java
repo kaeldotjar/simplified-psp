@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface CommonUserRepository extends JpaRepository<CommonUser, UUID> {
-    Optional<CommonUser> findByCpf(String cpf);
-    Optional<CommonUser> findByEmail(String email);
+  Optional<CommonUser> findByCpf(String cpf);
+
+  Optional<CommonUser> findByEmail(String email);
 }

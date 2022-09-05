@@ -31,63 +31,80 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 public class ShopkeeperServiceImpl implements ShopkeeperService {
 
-    private final ModelMapper mapper;
-    private final ShopkeeperRepository repository;
-    private final TransactionRepository transactionRepository;
-    private final PagedResourcesAssembler pagedResourcesAssembler;
+  private final ModelMapper mapper;
+  private final ShopkeeperRepository repository;
+  private final TransactionRepository transactionRepository;
+  private final PagedResourcesAssembler pagedResourcesAssembler;
 
-    @Override
-    public ShopkeeperDTO save(ShopkeeperDTO entity) {
+  @Override
+  public ShopkeeperDTO save(ShopkeeperDTO entity) {
 
-        Optional<Shopkeeper> cnpj = repository.findByCnpj(entity.getCnpj());
+    Optional<Shopkeeper> cnpj = repository.findByCnpj(entity.getCnpj());
 
-        if(cnpj.isPresent()) throw new BadRequestException("Cnpj already taken");
+    if (cnpj.isPresent()) throw new BadRequestException("Cnpj already taken");
 
-        Optional<Shopkeeper> email = repository.findByEmail(entity.getEmail());
+    Optional<Shopkeeper> email = repository.findByEmail(entity.getEmail());
 
-        if(email.isPresent()) throw new BadRequestException("Email already taken");
+    if (email.isPresent()) throw new BadRequestException("Email already taken");
 
-        Shopkeeper shop = repository.save(mapper.map(entity, Shopkeeper.class));
+    Shopkeeper shop = repository.save(mapper.map(entity, Shopkeeper.class));
 
-        return mapper.map(shop, ShopkeeperDTO.class);
-    }
+    return mapper.map(shop, ShopkeeperDTO.class);
+  }
 
-    @Override
-    public PagedModel<EntityModel<ShopkeeperDTO>> findAll(Pageable pageable) {
+  @Override
+  public PagedModel<EntityModel<ShopkeeperDTO>> findAll(Pageable pageable) {
 
-        Page<ShopkeeperDTO> shopkeeperDtoPage = repository.findAll(pageable).map(e ->
-                mapper.map(e, ShopkeeperDTO.class));
+    Page<ShopkeeperDTO> shopkeeperDtoPage =
+        repository.findAll(pageable).map(e -> mapper.map(e, ShopkeeperDTO.class));
 
-        shopkeeperDtoPage = shopkeeperDtoPage.map(dto ->
-                dto.add(linkTo(methodOn(ShopkeeperController.class).findOneById(dto.getKey())).withSelfRel()));
+    shopkeeperDtoPage =
+        shopkeeperDtoPage.map(
+            dto ->
+                dto.add(
+                    linkTo(methodOn(ShopkeeperController.class).findById(dto.getKey()))
+                        .withSelfRel()));
 
-        Link link = linkTo(methodOn(ShopkeeperController.class)
-                .findAll(pageable.getPageNumber(), pageable.getPageSize())).withSelfRel();
+    Link link =
+        linkTo(
+                methodOn(ShopkeeperController.class)
+                    .findAll(pageable.getPageNumber(), pageable.getPageSize()))
+            .withSelfRel();
 
-        return pagedResourcesAssembler.toModel(shopkeeperDtoPage, link);
-    }
+    return pagedResourcesAssembler.toModel(shopkeeperDtoPage, link);
+  }
 
-    @Override
-    public ShopkeeperDTO findById(UUID id) {
-        Shopkeeper entity = repository.findById(id).orElseThrow(NotFoundException::new);
-        ShopkeeperDTO dto = mapper.map(entity, ShopkeeperDTO.class);
+  @Override
+  public ShopkeeperDTO findById(UUID id) {
+    Shopkeeper entity = repository.findById(id).orElseThrow(NotFoundException::new);
+    ShopkeeperDTO dto = mapper.map(entity, ShopkeeperDTO.class);
 
-        dto.add(linkTo(methodOn(ShopkeeperController.class).findOneById(id)).withSelfRel(),
-                linkTo(methodOn(ShopkeeperController.class).findAll(0, 10)).withRel("shopkeepers"));
-        return dto;
-    }
+    dto.add(
+        linkTo(methodOn(ShopkeeperController.class).findById(id)).withSelfRel(),
+        linkTo(methodOn(ShopkeeperController.class).findAll(0, 10)).withRel("shopkeepers"));
+    return dto;
+  }
 
-    @Override
-    public PagedModel<EntityModel<TransactionDTO>> findTransactions(UUID id, Pageable pageable) {
-        Page<TransactionDTO> transactionsDtoPage = transactionRepository.findAllByPayee(id, pageable)
-                .map(el -> mapper.map(el, TransactionDTO.class));
+  @Override
+  public PagedModel<EntityModel<TransactionDTO>> findTransactions(UUID id, Pageable pageable) {
+    Page<TransactionDTO> transactionsDtoPage =
+        transactionRepository
+            .findAllByPayee(id, pageable)
+            .map(el -> mapper.map(el, TransactionDTO.class));
 
-        transactionsDtoPage = transactionsDtoPage.map(el ->
-                el.add(linkTo(methodOn(TransactionController.class).findById(el.getKey())).withSelfRel()));
+    transactionsDtoPage =
+        transactionsDtoPage.map(
+            el ->
+                el.add(
+                    linkTo(methodOn(TransactionController.class).findById(el.getKey()))
+                        .withSelfRel()));
 
-        Link link = linkTo(methodOn(CommonUserController.class)
-                .getUserTransactions(id, pageable.getPageNumber(), pageable.getPageSize())).withSelfRel();
+    Link link =
+        linkTo(
+                methodOn(CommonUserController.class)
+                    .getUserTransactions(id, pageable.getPageNumber(), pageable.getPageSize()))
+            .withSelfRel();
 
-        return pagedResourcesAssembler.toModel(transactionsDtoPage, link);
-    }
+    return pagedResourcesAssembler.toModel(transactionsDtoPage, link);
+  }
 }

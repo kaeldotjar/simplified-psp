@@ -23,46 +23,48 @@ import java.util.UUID;
 @ExposesResourceFor(ShopkeeperDTO.class)
 public class ShopkeeperController {
 
-    private final ShopkeeperService service;
+  private final ShopkeeperService service;
 
-    @PostMapping
-    public ResponseEntity<ShopkeeperDTO> create(@Valid @RequestBody ShopkeeperDTO entity) {
-        ShopkeeperDTO newEntity = service.save(entity);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}").buildAndExpand(newEntity.getKey()).toUri();
-        return ResponseEntity.created(uri).build();
-    }
+  @PostMapping
+  public ResponseEntity<ShopkeeperDTO> create(@Valid @RequestBody ShopkeeperDTO entity) {
+    ShopkeeperDTO newEntity = service.save(entity);
+    URI uri =
+        ServletUriComponentsBuilder.fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(newEntity.getKey())
+            .toUri();
+    return ResponseEntity.created(uri).build();
+  }
 
-    @GetMapping
-    public ResponseEntity<PagedModel<EntityModel<ShopkeeperDTO>>> findAll(
-            @RequestParam(value = "page", defaultValue = "0") Integer page,
-            @RequestParam(value = "size", defaultValue = "10") Integer size) {
+  @GetMapping
+  public ResponseEntity<PagedModel<EntityModel<ShopkeeperDTO>>> findAll(
+      @RequestParam(value = "page", defaultValue = "0") Integer page,
+      @RequestParam(value = "size", defaultValue = "10") Integer size) {
 
-        Pageable pageable = PageRequest.of(page, size);
+    Pageable pageable = PageRequest.of(page, size);
 
-        PagedModel<EntityModel<ShopkeeperDTO>> all = service.findAll(pageable);
-        if(all.getContent().isEmpty()) return ResponseEntity.noContent().build();
+    PagedModel<EntityModel<ShopkeeperDTO>> all = service.findAll(pageable);
+    if (all.getContent().isEmpty()) return ResponseEntity.noContent().build();
 
-        return ResponseEntity.ok(all);
-    }
+    return ResponseEntity.ok(all);
+  }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<ShopkeeperDTO> findOneById(@PathVariable UUID id) {
-        return ResponseEntity.ok(service.findById(id));
-    }
+  @GetMapping("/{id}")
+  public ResponseEntity<ShopkeeperDTO> findById(@PathVariable UUID id) {
+    return ResponseEntity.ok(service.findById(id));
+  }
 
-    @GetMapping("/{id}/transactions")
-    public ResponseEntity<PagedModel<EntityModel<TransactionDTO>>> getUserTransactions(
-            @PathVariable("id") UUID id,
-            @RequestParam(value = "page", defaultValue = "0") Integer page,
-            @RequestParam(value = "size", defaultValue = "10") Integer size) {
+  @GetMapping("/{id}/transactions")
+  public ResponseEntity<PagedModel<EntityModel<TransactionDTO>>> getUserTransactions(
+      @PathVariable("id") UUID id,
+      @RequestParam(value = "page", defaultValue = "0") Integer page,
+      @RequestParam(value = "size", defaultValue = "10") Integer size) {
 
-        Pageable pageable = PageRequest.of(page, size);
+    Pageable pageable = PageRequest.of(page, size);
 
-        PagedModel<EntityModel<TransactionDTO>> transactions = service.findTransactions(id, pageable);
-        if(transactions.getContent().isEmpty()) return ResponseEntity.noContent().build();
+    PagedModel<EntityModel<TransactionDTO>> transactions = service.findTransactions(id, pageable);
+    if (transactions.getContent().isEmpty()) return ResponseEntity.noContent().build();
 
-        return ResponseEntity.ok(transactions);
-    }
-
+    return ResponseEntity.ok(transactions);
+  }
 }

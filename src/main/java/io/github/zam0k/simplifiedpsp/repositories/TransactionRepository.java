@@ -10,7 +10,8 @@ import org.springframework.data.repository.query.Param;
 import java.util.UUID;
 
 public interface TransactionRepository extends JpaRepository<Transaction, UUID> {
-    @Query("SELECT t FROM Transaction t WHERE t.payee = :id OR t.payer =:id")
-    Page<Transaction> findAllOwnerTransactions(@Param("id") UUID id, Pageable pageable);
-    Page<Transaction> findAllByPayee(UUID id, Pageable pageable);
+  @Query("SELECT t FROM Transaction t WHERE t.payee = :id OR t.payer =:id")
+  Page<Transaction> findAllOwnerTransactions(@Param("id") UUID id, Pageable pageable);
+
+  Page<Transaction> findAllByPayee(UUID id, Pageable pageable);
 }

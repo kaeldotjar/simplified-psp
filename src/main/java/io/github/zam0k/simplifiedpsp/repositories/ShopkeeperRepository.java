@@ -7,6 +7,7 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ShopkeeperRepository extends JpaRepository<Shopkeeper, UUID> {
-    Optional<Shopkeeper> findByCnpj(String cnpj);
-    Optional<Shopkeeper> findByEmail(String email);
+  Optional<Shopkeeper> findByCnpj(String cnpj);
+
+  Optional<Shopkeeper> findByEmail(String email);
 }

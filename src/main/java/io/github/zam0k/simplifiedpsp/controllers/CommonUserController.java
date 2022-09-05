@@ -20,32 +20,35 @@ import java.util.UUID;
 @RequestMapping("/api/common-users/v1")
 @RequiredArgsConstructor
 public class CommonUserController {
-    private final CommonUserService service;
+  private final CommonUserService service;
 
-    @PostMapping
-    public ResponseEntity<CommonUserDTO> create(@Valid @RequestBody CommonUserDTO entity) {
-        CommonUserDTO newEntity = service.save(entity);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}").buildAndExpand(newEntity.getKey()).toUri();
-           return ResponseEntity.created(uri).build();
-    }
+  @PostMapping
+  public ResponseEntity<CommonUserDTO> create(@Valid @RequestBody CommonUserDTO entity) {
+    CommonUserDTO newEntity = service.save(entity);
+    URI uri =
+        ServletUriComponentsBuilder.fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(newEntity.getKey())
+            .toUri();
+    return ResponseEntity.created(uri).build();
+  }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CommonUserDTO> findById(@PathVariable("id") UUID id) {
-        return ResponseEntity.ok(service.findById(id));
-    }
+  @GetMapping("/{id}")
+  public ResponseEntity<CommonUserDTO> findById(@PathVariable("id") UUID id) {
+    return ResponseEntity.ok(service.findById(id));
+  }
 
-    @GetMapping("/{id}/transactions")
-    public ResponseEntity<PagedModel<EntityModel<TransactionDTO>>> getUserTransactions(
-            @PathVariable("id") UUID id,
-            @RequestParam(value = "page", defaultValue = "0") Integer page,
-            @RequestParam(value = "size", defaultValue = "10") Integer size) {
+  @GetMapping("/{id}/transactions")
+  public ResponseEntity<PagedModel<EntityModel<TransactionDTO>>> getUserTransactions(
+      @PathVariable("id") UUID id,
+      @RequestParam(value = "page", defaultValue = "0") Integer page,
+      @RequestParam(value = "size", defaultValue = "10") Integer size) {
 
-        Pageable pageable = PageRequest.of(page, size);
+    Pageable pageable = PageRequest.of(page, size);
 
-        PagedModel<EntityModel<TransactionDTO>> transactions = service.findTransactions(id, pageable);
-        if(transactions.getContent().isEmpty()) return ResponseEntity.noContent().build();
+    PagedModel<EntityModel<TransactionDTO>> transactions = service.findTransactions(id, pageable);
+    if (transactions.getContent().isEmpty()) return ResponseEntity.noContent().build();
 
-        return ResponseEntity.ok(transactions);
-    }
+    return ResponseEntity.ok(transactions);
+  }
 }

@@ -19,38 +19,36 @@ import static org.springframework.http.MediaType.APPLICATION_JSON;
 @NoArgsConstructor
 public class PaymentNotifier {
 
-    @Async("asyncExecutor")
-    public void notifyPayee(IPayee payee, RestTemplate restTemplate) {
+  @Async("asyncExecutor")
+  public void notifyPayee(IPayee payee, RestTemplate restTemplate) {
 
-        String notifyApiURL =
-                "http://o4d9z.mocklab.io/notify";
+    String notifyApiURL = "http://o4d9z.mocklab.io/notify";
 
-        ResponseEntity<String> response;
+    ResponseEntity<String> response;
 
-        try {
-            log.info("Preparing to send notification to payee...");
+    try {
+      log.info("Preparing to send notification to payee...");
 
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(APPLICATION_JSON);
+      HttpHeaders headers = new HttpHeaders();
+      headers.setContentType(APPLICATION_JSON);
 
-            MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-            params.add("email", payee.getEmail());
+      MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+      params.add("email", payee.getEmail());
 
-            HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+      HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
 
-            response = restTemplate
-                    .postForEntity(notifyApiURL, request, String.class);
+      response = restTemplate.postForEntity(notifyApiURL, request, String.class);
 
-            // TO-DO: check if there's a more fitting error for this
-            if(response.getStatusCode() != CREATED) {
-                log.warn("Could not send notification to payee");
-                return;
-            }
+      // TO-DO: check if there's a more fitting error for this
+      if (response.getStatusCode() != CREATED) {
+        log.warn("Could not send notification to payee");
+        return;
+      }
 
-            log.info("Payment notification sent to payee");
+      log.info("Payment notification sent to payee");
 
-        } catch (RestClientException e) {
-            log.warn("Notify API currently unavailable");
-        }
+    } catch (RestClientException e) {
+      log.warn("Notify API currently unavailable");
     }
+  }
 }

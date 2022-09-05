@@ -16,19 +16,22 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class TransactionController {
 
-    private final TransactionService service;
+  private final TransactionService service;
 
-    @PostMapping
-    public ResponseEntity<TransactionDTO> create(@Valid @RequestBody TransactionDTO transaction) {
-        TransactionDTO newEntity = service.create(transaction);
-        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}").buildAndExpand(newEntity.getKey()).toUri();
+  @PostMapping
+  public ResponseEntity<TransactionDTO> create(@Valid @RequestBody TransactionDTO transaction) {
+    TransactionDTO newEntity = service.create(transaction);
+    URI uri =
+        ServletUriComponentsBuilder.fromCurrentRequest()
+            .path("/{id}")
+            .buildAndExpand(newEntity.getKey())
+            .toUri();
 
-        return ResponseEntity.created(uri).build();
-    }
+    return ResponseEntity.created(uri).build();
+  }
 
-    @GetMapping("/{id}")
-    public ResponseEntity<TransactionDTO> findById(@PathVariable("id") UUID id) {
-        return ResponseEntity.ok(service.findById(id));
-    }
+  @GetMapping("/{id}")
+  public ResponseEntity<TransactionDTO> findById(@PathVariable("id") UUID id) {
+    return ResponseEntity.ok(service.findById(id));
+  }
 }

@@ -24,21 +24,25 @@ import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 @JsonPropertyOrder({"id", "fullName", "cnpj", "email", "password", "balance"})
 @Relation(collectionRelation = "shopkeepers", itemRelation = "shopkeeper")
 public class ShopkeeperDTO extends RepresentationModel<ShopkeeperDTO> {
-    @JsonProperty("id")
-    @Null(message = "Id must be null")
-    private UUID key;
-    @NotBlank(message = "Full Name cannot be empty")
-    private String fullName;
-    @CNPJ(message = "Invalid cnpj format")
-    @NotBlank(message = "Cnpj cannot be empty")
-    private String cnpj;
-    @Email(message = "Invalid email format")
-    @NotBlank(message = "Email cannot be empty")
-    private String email;
-    @NotBlank(message = "Password cannot be empty")
-    @JsonProperty(access = WRITE_ONLY)
-    private String password;
-    @NotNull(message = "Balance cannot be null")
-    private BigDecimal balance;
+  @JsonProperty("id")
+  @Null(message = "Id must be null")
+  private UUID key;
 
+  @NotBlank(message = "Full Name cannot be empty")
+  private String fullName;
+
+  @CNPJ(message = "Invalid cnpj format")
+  @NotBlank(message = "Cnpj cannot be empty")
+  private String cnpj;
+
+  @Email(message = "Invalid email format")
+  @NotBlank(message = "Email cannot be empty")
+  private String email;
+
+  @NotBlank(message = "Password cannot be empty")
+  @JsonProperty(access = WRITE_ONLY)
+  private String password;
+
+  @NotNull(message = "Balance cannot be null")
+  private BigDecimal balance;
 }

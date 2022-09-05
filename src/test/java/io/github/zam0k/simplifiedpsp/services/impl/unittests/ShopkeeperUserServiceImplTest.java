@@ -24,82 +24,75 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ShopkeeperUserServiceImplTest {
 
-    public final static UUID ID = UUID.randomUUID();
-    public final static String FULL_NAME = "subject name";
-    public final static String CNPJ = "68.340.815/0001-53";
-    public final static String EMAIL = "subject@gmail.com";
-    public final static String PASSWORD = "123456";
-    public final static BigDecimal BALANCE = BigDecimal.valueOf(100.00);
+  public static final UUID ID = UUID.randomUUID();
+  public static final String FULL_NAME = "subject name";
+  public static final String CNPJ = "68.340.815/0001-53";
+  public static final String EMAIL = "subject@gmail.com";
+  public static final String PASSWORD = "123456";
+  public static final BigDecimal BALANCE = BigDecimal.valueOf(100.00);
 
-    @InjectMocks
-    private ShopkeeperServiceImpl service;
+  @InjectMocks private ShopkeeperServiceImpl service;
 
-    @Mock
-    private ShopkeeperRepository repository;
-    @Mock
-    private ModelMapper mapper;
-    @Mock
-    private PagedResourcesAssembler assembler;
+  @Mock private ShopkeeperRepository repository;
+  @Mock private ModelMapper mapper;
+  @Mock private PagedResourcesAssembler assembler;
 
-    private Shopkeeper entity;
-    private ShopkeeperDTO entityDTO;
-    private Optional<Shopkeeper> optionalEntity;
+  private Shopkeeper entity;
+  private ShopkeeperDTO entityDTO;
+  private Optional<Shopkeeper> optionalEntity;
 
-    @BeforeEach
-    void setUp() {
-        entity = new Shopkeeper(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
-        entityDTO = new ShopkeeperDTO(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
-        optionalEntity = Optional.of(entity);
-    }
+  @BeforeEach
+  void setUp() {
+    entity = new Shopkeeper(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
+    entityDTO = new ShopkeeperDTO(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
+    optionalEntity = Optional.of(entity);
+  }
 
-    @Test
-    void whenSaveThenReturnSuccess() {
-        when(mapper.map(any(ShopkeeperDTO.class), any())).thenReturn(entity);
-        when(mapper.map(any(Shopkeeper.class), any())).thenReturn(entityDTO);
+  @Test
+  void whenSaveThenReturnSuccess() {
+    when(mapper.map(any(ShopkeeperDTO.class), any())).thenReturn(entity);
+    when(mapper.map(any(Shopkeeper.class), any())).thenReturn(entityDTO);
 
-        when(repository.save(any())).thenReturn(entity);
+    when(repository.save(any())).thenReturn(entity);
 
-        ShopkeeperDTO response = service.save(entityDTO);
+    ShopkeeperDTO response = service.save(entityDTO);
 
-        assertAll(
-                () -> assertNotNull(response),
-                () -> assertEquals(ShopkeeperDTO.class, response.getClass()),
-                () -> assertEquals(ID, response.getKey()),
-                () -> assertEquals(FULL_NAME, response.getFullName()),
-                () -> assertEquals(CNPJ, response.getCnpj()),
-                () -> assertEquals(EMAIL, response.getEmail()),
-                () -> assertEquals(PASSWORD, response.getPassword()),
-                () -> assertEquals(BALANCE, response.getBalance())
-        );
-    }
+    assertAll(
+        () -> assertNotNull(response),
+        () -> assertEquals(ShopkeeperDTO.class, response.getClass()),
+        () -> assertEquals(ID, response.getKey()),
+        () -> assertEquals(FULL_NAME, response.getFullName()),
+        () -> assertEquals(CNPJ, response.getCnpj()),
+        () -> assertEquals(EMAIL, response.getEmail()),
+        () -> assertEquals(PASSWORD, response.getPassword()),
+        () -> assertEquals(BALANCE, response.getBalance()));
+  }
 
-    /* TO-DO: make this test in the ControllerJsonTest since (it seems) you can't unit test a PagedModel
-    @Test
-    void whenFindAllThenReturnShopList() {
-    }
-    */
+  /* TO-DO: make this test in the ControllerJsonTest since (it seems) you can't unit test a PagedModel
+  @Test
+  void whenFindAllThenReturnShopList() {
+  }
+  */
 
-    @Test
-    void whenFindByIdThenReturnShop() {
-        when(mapper.map(any(Shopkeeper.class), any())).thenReturn(entityDTO);
-        when(repository.findById(any())).thenReturn(optionalEntity);
+  @Test
+  void whenFindByIdThenReturnShop() {
+    when(mapper.map(any(Shopkeeper.class), any())).thenReturn(entityDTO);
+    when(repository.findById(any())).thenReturn(optionalEntity);
 
-        ShopkeeperDTO response = service.findById(ID);
+    ShopkeeperDTO response = service.findById(ID);
 
-        // TO-DO: better tests for Hateoas
-        assertAll(
-                () -> assertNotNull(response),
-                () -> assertNotNull(response.getLinks()),
-                () -> assertTrue(response.hasLink("self")),
-                () -> assertTrue(response.hasLink("shopkeepers")),
-                () -> assertEquals(ShopkeeperDTO.class, response.getClass()),
-                () -> assertEquals(ID, response.getKey()),
-                () -> assertEquals(FULL_NAME, response.getFullName()),
-                () -> assertEquals(CNPJ, response.getCnpj()),
-                () -> assertEquals(EMAIL, response.getEmail()),
-                () -> assertEquals(PASSWORD, response.getPassword()),
-                () -> assertEquals(BALANCE, response.getBalance())
-        );
-    }
-
+    // TO-DO: better tests for Hateoas
+    assertAll(
+        () -> assertNotNull(response),
+        () -> assertNotNull(response.getLinks()),
+        () -> assertTrue(response.hasLink("self")),
+        () -> assertTrue(response.hasLink("shopkeepers")),
+        () -> assertEquals(ShopkeeperDTO.class, response.getClass()),
+        () -> assertEquals(ID, response.getKey()),
+        () -> assertEquals(FULL_NAME, response.getFullName()),
+        () -> assertEquals(CNPJ, response.getCnpj()),
+        () -> assertEquals(EMAIL, response.getEmail()),
+        () -> assertEquals(PASSWORD, response.getPassword()),
+        () -> assertEquals(BALANCE, response.getBalance()));
+  }
 }
