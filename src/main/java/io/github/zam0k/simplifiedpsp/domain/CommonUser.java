@@ -1,41 +1,32 @@
 package io.github.zam0k.simplifiedpsp.domain;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
-import java.util.List;
-
-import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
+import java.util.UUID;
 
 @Entity
-@Table(name = "natural_person")
+@Table(name = "common_user")
 @Setter @Getter @EqualsAndHashCode
 @NoArgsConstructor @AllArgsConstructor
-public final class NaturalPerson implements IPayer, IPayee {
+public class CommonUser implements IPayer, IPayee {
     @Id
-    @GeneratedValue(strategy = GenerationType.TABLE)
-    @Column(updatable = false, nullable = false)
-    private Long id;
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(updatable = false, nullable = false, columnDefinition = "BINARY(16)")
+    private UUID id;
     @Column(name = "full_name", nullable = false, length = 200)
     private String fullName;
     @Column(nullable = false, unique = true, length = 14, updatable = false)
     private String cpf;
     @Column(nullable = false, unique = true)
     private String email;
-    @JsonProperty(access = WRITE_ONLY)
     @Column(nullable = false)
     private String password;
     @Column(nullable = false)
     private BigDecimal balance;
-
-    @JsonProperty(access = WRITE_ONLY)
-    @ManyToMany
-    @JoinTable(name = "belongs_to",
-    joinColumns = @JoinColumn(name = "natural_person_id"),
-    inverseJoinColumns = @JoinColumn(name = "juridical_person_id"))
-    private List<JuridicalPerson> shops;
 
     @Override
     public void receiveValue(BigDecimal value) {
