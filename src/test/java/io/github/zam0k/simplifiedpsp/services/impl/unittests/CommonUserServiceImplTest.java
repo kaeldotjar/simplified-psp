@@ -1,9 +1,10 @@
-package io.github.zam0k.simplifiedpsp.services.impl;
+package io.github.zam0k.simplifiedpsp.services.impl.unittests;
 
 import io.github.zam0k.simplifiedpsp.controllers.dto.CommonUserDTO;
 import io.github.zam0k.simplifiedpsp.domain.CommonUser;
 import io.github.zam0k.simplifiedpsp.repositories.CommonUserRepository;
 import io.github.zam0k.simplifiedpsp.services.exceptions.BadRequestException;
+import io.github.zam0k.simplifiedpsp.services.impl.CommonUserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -15,6 +16,7 @@ import org.modelmapper.ModelMapper;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -24,7 +26,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CommonUserServiceImplTest {
 
-    public final static Long ID = 1L;
+    public final static UUID ID = UUID.randomUUID();
     public final static String FULL_NAME = "subject name";
     public final static String CPF = "275.974.380-28";
     public final static String EMAIL = "subject@gmail.com";

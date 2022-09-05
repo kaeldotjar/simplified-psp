@@ -1,14 +1,15 @@
-package io.github.zam0k.simplifiedpsp.services.impl;
+package io.github.zam0k.simplifiedpsp.services.impl.unittests;
 
 import io.github.zam0k.simplifiedpsp.controllers.dto.TransactionDTO;
 import io.github.zam0k.simplifiedpsp.domain.CommonUser;
-import io.github.zam0k.simplifiedpsp.domain.ShopkeeperUser;
+import io.github.zam0k.simplifiedpsp.domain.Shopkeeper;
 import io.github.zam0k.simplifiedpsp.domain.Transaction;
 import io.github.zam0k.simplifiedpsp.repositories.CommonUserRepository;
-import io.github.zam0k.simplifiedpsp.repositories.ShopkeeperUserRepository;
+import io.github.zam0k.simplifiedpsp.repositories.ShopkeeperRepository;
 import io.github.zam0k.simplifiedpsp.repositories.TransactionRepository;
 import io.github.zam0k.simplifiedpsp.services.exceptions.BadRequestException;
 import io.github.zam0k.simplifiedpsp.services.exceptions.NotFoundException;
+import io.github.zam0k.simplifiedpsp.services.impl.TransactionServiceImpl;
 import io.github.zam0k.simplifiedpsp.utils.PaymentNotifier;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -34,14 +36,14 @@ import static org.springframework.http.HttpStatus.OK;
 
 @ExtendWith(SpringExtension.class)
 class TransactionServiceImplTest {
-    public final static Long TRANS_ID = 3L;
+    public final static UUID TRANS_ID = UUID.randomUUID();
     public final static BigDecimal TRANS_BALANCE = BigDecimal.valueOf(10.00);
     public final static LocalDateTime TRANS_TIMESTAMP = LocalDateTime.now();
 
-    public final static Long PAYER_ID = 2L;
+    public final static UUID PAYER_ID = UUID.randomUUID();
     public final static BigDecimal PAYER_BALANCE = BigDecimal.valueOf(100.00);
 
-    public final static Long PAYEE_ID = 2L;
+    public final static UUID PAYEE_ID = UUID.randomUUID();
     public final static BigDecimal PAYEE_BALANCE = BigDecimal.valueOf(100.00);
 
 
@@ -51,7 +53,7 @@ class TransactionServiceImplTest {
     @Mock
     private CommonUserRepository payerRepository;
     @Mock
-    private ShopkeeperUserRepository payeeRepository;
+    private ShopkeeperRepository payeeRepository;
     @Mock
     private ModelMapper mapper;
     @Mock
@@ -65,7 +67,7 @@ class TransactionServiceImplTest {
     private Transaction transaction;
     private Optional<Transaction> optionalTransaction;
     private CommonUser payer;
-    private ShopkeeperUser payee;
+    private Shopkeeper payee;
     private Optional<CommonUser> optionalPayer;
 
 
@@ -77,7 +79,7 @@ class TransactionServiceImplTest {
         optionalTransaction = Optional.of(transaction);
         payer = new CommonUser(PAYER_ID, "", "", "",
                 "", PAYER_BALANCE);
-        payee = new ShopkeeperUser(PAYEE_ID, "", "",
+        payee = new Shopkeeper(PAYEE_ID, "", "",
                 "", "", PAYEE_BALANCE);
         optionalPayer = Optional.of(payer);
     }
@@ -142,7 +144,7 @@ class TransactionServiceImplTest {
 
     @Test
     void whenSaveTransactionReturnNotFoundException() {
-        transactionDto.setPayer(4L);
+        transactionDto.setPayer(UUID.randomUUID());
         try {
             service.create(transactionDto);
         } catch (Exception ex) {
@@ -162,9 +164,8 @@ class TransactionServiceImplTest {
 
         assertAll(
                 () -> assertNotNull(response),
-                () -> assertTrue(response.hasLinks()),
+                () -> assertNotNull(response.getLinks()),
                 () -> assertTrue(response.hasLink("self")),
-                () -> assertFalse(response.getLinks("self").isEmpty()),
                 () -> assertEquals(TransactionDTO.class, response.getClass()),
                 () -> assertEquals(TRANS_ID, response.getKey()),
                 () -> assertEquals(TRANS_BALANCE, response.getValue()),

@@ -1,8 +1,9 @@
-package io.github.zam0k.simplifiedpsp.services.impl;
+package io.github.zam0k.simplifiedpsp.services.impl.unittests;
 
-import io.github.zam0k.simplifiedpsp.controllers.dto.ShopkeeperUserDTO;
-import io.github.zam0k.simplifiedpsp.domain.ShopkeeperUser;
-import io.github.zam0k.simplifiedpsp.repositories.ShopkeeperUserRepository;
+import io.github.zam0k.simplifiedpsp.controllers.dto.ShopkeeperDTO;
+import io.github.zam0k.simplifiedpsp.domain.Shopkeeper;
+import io.github.zam0k.simplifiedpsp.repositories.ShopkeeperRepository;
+import io.github.zam0k.simplifiedpsp.services.impl.ShopkeeperServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -14,6 +15,7 @@ import org.springframework.data.web.PagedResourcesAssembler;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,7 +24,7 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class ShopkeeperUserServiceImplTest {
 
-    public final static Long ID = 2L;
+    public final static UUID ID = UUID.randomUUID();
     public final static String FULL_NAME = "subject name";
     public final static String CNPJ = "68.340.815/0001-53";
     public final static String EMAIL = "subject@gmail.com";
@@ -30,38 +32,38 @@ class ShopkeeperUserServiceImplTest {
     public final static BigDecimal BALANCE = BigDecimal.valueOf(100.00);
 
     @InjectMocks
-    private ShopkeeperUserServiceImpl service;
+    private ShopkeeperServiceImpl service;
 
     @Mock
-    private ShopkeeperUserRepository repository;
+    private ShopkeeperRepository repository;
     @Mock
     private ModelMapper mapper;
     @Mock
     private PagedResourcesAssembler assembler;
 
-    private ShopkeeperUser entity;
-    private ShopkeeperUserDTO entityDTO;
-    private Optional<ShopkeeperUser> optionalEntity;
+    private Shopkeeper entity;
+    private ShopkeeperDTO entityDTO;
+    private Optional<Shopkeeper> optionalEntity;
 
     @BeforeEach
     void setUp() {
-        entity = new ShopkeeperUser(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
-        entityDTO = new ShopkeeperUserDTO(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
+        entity = new Shopkeeper(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
+        entityDTO = new ShopkeeperDTO(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
         optionalEntity = Optional.of(entity);
     }
 
     @Test
     void whenSaveThenReturnSuccess() {
-        when(mapper.map(any(ShopkeeperUserDTO.class), any())).thenReturn(entity);
-        when(mapper.map(any(ShopkeeperUser.class), any())).thenReturn(entityDTO);
+        when(mapper.map(any(ShopkeeperDTO.class), any())).thenReturn(entity);
+        when(mapper.map(any(Shopkeeper.class), any())).thenReturn(entityDTO);
 
         when(repository.save(any())).thenReturn(entity);
 
-        ShopkeeperUserDTO response = service.save(entityDTO);
+        ShopkeeperDTO response = service.save(entityDTO);
 
         assertAll(
                 () -> assertNotNull(response),
-                () -> assertEquals(ShopkeeperUserDTO.class, response.getClass()),
+                () -> assertEquals(ShopkeeperDTO.class, response.getClass()),
                 () -> assertEquals(ID, response.getKey()),
                 () -> assertEquals(FULL_NAME, response.getFullName()),
                 () -> assertEquals(CNPJ, response.getCnpj()),
@@ -79,20 +81,18 @@ class ShopkeeperUserServiceImplTest {
 
     @Test
     void whenFindByIdThenReturnShop() {
-        when(mapper.map(any(ShopkeeperUser.class), any())).thenReturn(entityDTO);
+        when(mapper.map(any(Shopkeeper.class), any())).thenReturn(entityDTO);
         when(repository.findById(any())).thenReturn(optionalEntity);
 
-        ShopkeeperUserDTO response = service.findById(ID);
+        ShopkeeperDTO response = service.findById(ID);
 
         // TO-DO: better tests for Hateoas
         assertAll(
-                () -> assertTrue(response.hasLinks()),
+                () -> assertNotNull(response),
+                () -> assertNotNull(response.getLinks()),
                 () -> assertTrue(response.hasLink("self")),
                 () -> assertTrue(response.hasLink("shopkeepers")),
-                () -> assertFalse(response.getLinks("shopkeepers").isEmpty()),
-                () -> assertFalse(response.getLinks("self").isEmpty()),
-                () -> assertNotNull(response),
-                () -> assertEquals(ShopkeeperUserDTO.class, response.getClass()),
+                () -> assertEquals(ShopkeeperDTO.class, response.getClass()),
                 () -> assertEquals(ID, response.getKey()),
                 () -> assertEquals(FULL_NAME, response.getFullName()),
                 () -> assertEquals(CNPJ, response.getCnpj()),
