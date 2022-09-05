@@ -1,6 +1,7 @@
 package io.github.zam0k.simplifiedpsp.domain;
 
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -13,8 +14,9 @@ import java.util.UUID;
 @AllArgsConstructor
 public class Shopkeeper implements IPayee {
     @Id
-    @GeneratedValue
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(updatable = false, nullable = false, columnDefinition = "BINARY(16)")
     private UUID id;
     @Column(name = "full_name", nullable = false, length = 200)
     private String fullName;

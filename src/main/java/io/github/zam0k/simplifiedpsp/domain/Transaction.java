@@ -4,6 +4,7 @@ package io.github.zam0k.simplifiedpsp.domain;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
@@ -16,14 +17,15 @@ import java.util.UUID;
 @NoArgsConstructor @AllArgsConstructor
 public class Transaction {
     @Id
-    @GeneratedValue
-    @Column(updatable = false, nullable = false)
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @Column(updatable = false, nullable = false, columnDefinition = "BINARY(16)")
     private UUID id;
 
-    @Column(name = "payer_id", nullable = false)
+    @Column(name = "payer_id", nullable = false, columnDefinition = "BINARY(16)")
     private UUID payer;
 
-    @Column(name = "payee_id", nullable = false)
+    @Column(name = "payee_id", nullable = false, columnDefinition = "BINARY(16)")
     private UUID payee;
 
     @Column(name = "`value`", nullable = false)
