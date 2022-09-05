@@ -1,5 +1,6 @@
 package io.github.zam0k.simplifiedpsp.services.impl;
 
+import io.github.zam0k.simplifiedpsp.controllers.TransactionController;
 import io.github.zam0k.simplifiedpsp.controllers.dto.TransactionDTO;
 import io.github.zam0k.simplifiedpsp.domain.IPayee;
 import io.github.zam0k.simplifiedpsp.domain.IPayer;
@@ -25,6 +26,8 @@ import java.math.BigDecimal;
 import java.util.Optional;
 import java.util.stream.Stream;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 import static org.springframework.http.HttpStatus.OK;
 
 @Service
@@ -51,18 +54,28 @@ public class TransactionServiceImpl implements TransactionService {
         IPayee payee = getPayee(entity);
 
         Transaction transaction = mapper.map(entity, Transaction.class);
-        return executeTransaction(transaction, value, payer, payee);
+
+        executeTransaction(transaction, value, payer, payee);
+
+        return mapper.map(repository.save(transaction), TransactionDTO.class);
+    }
+
+    @Override
+    public TransactionDTO findById(Long id) {
+        Transaction transaction = repository.findById(id).orElseThrow(NotFoundException::new);
+        TransactionDTO dto = mapper.map(transaction, TransactionDTO.class);
+
+        dto.add(linkTo(methodOn(TransactionController.class).findById(id)).withSelfRel());
+
+        return dto;
     }
 
     @Transactional
-    private TransactionDTO executeTransaction(Transaction transaction, BigDecimal value, IPayer payer, IPayee payee) {
+    private void executeTransaction(Transaction transaction, BigDecimal value, IPayer payer, IPayee payee) {
         payee.receiveValue(value);
         payer.removeValue(value);
         authorizeTransaction();
-
         notifyPayee(payee);
-
-        return mapper.map(repository.save(transaction), TransactionDTO.class);
     }
 
     private void notifyPayee(IPayee payee) {

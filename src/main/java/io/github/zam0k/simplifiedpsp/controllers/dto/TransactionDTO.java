@@ -1,9 +1,10 @@
 package io.github.zam0k.simplifiedpsp.controllers.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+import lombok.*;
+import org.springframework.hateoas.RepresentationModel;
+import org.springframework.hateoas.server.core.Relation;
 
 import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.NotNull;
@@ -11,12 +12,15 @@ import javax.validation.constraints.Null;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-@Getter @Setter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class TransactionDTO {
+@JsonPropertyOrder({"id", "payer", "payee", "value", "timestamp"})
+@Relation(collectionRelation = "transactions", itemRelation = "transaction")
+public class TransactionDTO extends RepresentationModel<TransactionDTO> {
+    @JsonProperty("id")
     @Null(message = "Id must be null")
-    private Long id;
+    private Long key;
     @NotNull(message = "Payer must not be null")
     private Long payer;
     @NotNull(message = "Payee must not be null")
