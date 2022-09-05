@@ -1,8 +1,10 @@
 package io.github.zam0k.simplifiedpsp.controllers.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.*;
 import org.hibernate.validator.constraints.br.CPF;
+import org.springframework.hateoas.RepresentationModel;
 
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
@@ -12,12 +14,15 @@ import java.math.BigDecimal;
 
 import static com.fasterxml.jackson.annotation.JsonProperty.Access.WRITE_ONLY;
 
-@Getter @Setter @ToString
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class CommonUserDTO {
+@JsonPropertyOrder({"id", "fullName", "cpf", "email", "password", "balance"})
+public class CommonUserDTO extends RepresentationModel<CommonUserDTO> {
+
+    @JsonProperty("id")
     @Null(message = "Id must be null")
-    private Long id;
+    private Long key;
     @NotBlank(message = "Full Name cannot be empty")
     private String fullName;
     @CPF(message = "Invalid cpf format")

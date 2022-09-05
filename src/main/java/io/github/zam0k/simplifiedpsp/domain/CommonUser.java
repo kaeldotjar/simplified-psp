@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 @Table(name = "common_user")
 @Setter @Getter @EqualsAndHashCode
 @NoArgsConstructor @AllArgsConstructor
-public final class CommonUser implements IPayer, IPayee {
+public class CommonUser implements IPayer, IPayee {
     @Id
     @GeneratedValue(strategy = GenerationType.TABLE)
     @Column(updatable = false, nullable = false)
