@@ -87,6 +87,8 @@ class ShopkeeperUserServiceImplTest {
         // TO-DO: better tests for Hateoas
         assertAll(
                 () -> assertTrue(response.hasLinks()),
+                () -> assertTrue(response.hasLink("self")),
+                () -> assertTrue(response.hasLink("shopkeepers")),
                 () -> assertFalse(response.getLinks("shopkeepers").isEmpty()),
                 () -> assertFalse(response.getLinks("self").isEmpty()),
                 () -> assertNotNull(response),
