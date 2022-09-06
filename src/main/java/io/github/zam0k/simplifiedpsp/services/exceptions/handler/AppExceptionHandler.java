@@ -23,7 +23,7 @@ public class AppExceptionHandler {
         ApiError error = new ApiError(
                 LocalDateTime.now(),
                 INTERNAL_SERVER_ERROR.value(),
-                ex.getMessage(),
+                ex.getCause().getMessage(),
                 request.getRequestURI());
         return ResponseEntity.status(INTERNAL_SERVER_ERROR).body(error);
     }
