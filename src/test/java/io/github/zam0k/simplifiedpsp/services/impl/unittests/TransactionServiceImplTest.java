@@ -61,6 +61,7 @@ class TransactionServiceImplTest {
   private CommonUser payer;
   private Shopkeeper payee;
   private Optional<CommonUser> optionalPayer;
+  private Optional<Shopkeeper> optionalPayee;
 
   @BeforeEach
   void setUp() {
@@ -71,6 +72,7 @@ class TransactionServiceImplTest {
     payer = new CommonUser(PAYER_ID, "", "", "", "", PAYER_BALANCE);
     payee = new Shopkeeper(PAYEE_ID, "", "", "", "", PAYEE_BALANCE);
     optionalPayer = Optional.of(payer);
+    optionalPayee = Optional.of(payee);
   }
 
   @Test
@@ -143,6 +145,8 @@ class TransactionServiceImplTest {
   @Test
   void whenFindByIdReturnSuccess() {
     when(repository.findById(TRANS_ID)).thenReturn(optionalTransaction);
+    when(payeeRepository.findById(PAYEE_ID)).thenReturn(optionalPayee);
+    when(payerRepository.findById(PAYER_ID)).thenReturn(optionalPayer);
     when(mapper.map(any(Transaction.class), any())).thenReturn(transactionDto);
 
     TransactionDTO response = service.findById(TRANS_ID);
