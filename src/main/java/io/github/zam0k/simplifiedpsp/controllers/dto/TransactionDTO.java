@@ -21,16 +21,20 @@ import java.util.UUID;
 @JsonPropertyOrder({"id", "payer", "payee", "value", "timestamp"})
 @Relation(collectionRelation = "transactions", itemRelation = "transaction")
 public class TransactionDTO extends RepresentationModel<TransactionDTO> {
-    @JsonProperty("id")
-    @Null(message = "Id must be null")
-    private UUID key;
-    @NotNull(message = "Payer must not be null")
-    private UUID payer;
-    @NotNull(message = "Payee must not be null")
-    private UUID payee;
-    @NotNull(message = "Value must not be null")
-    @DecimalMin(value = "0.01", message = "Minimum value must be 0.01")
-    private BigDecimal value;
-    @Null(message = "Timestamp must be null")
-    private LocalDateTime timestamp;
+  @JsonProperty("id")
+  @Null(message = "Id must be null")
+  private UUID key;
+
+  @NotNull(message = "Payer must not be null")
+  private UUID payer;
+
+  @NotNull(message = "Payee must not be null")
+  private UUID payee;
+
+  @NotNull(message = "Value must not be null")
+  @DecimalMin(value = "0.01", message = "Minimum value must be 0.01")
+  private BigDecimal value;
+
+  @Null(message = "Timestamp must be null")
+  private LocalDateTime timestamp;
 }

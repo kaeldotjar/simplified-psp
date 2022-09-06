@@ -30,54 +30,61 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 @RequiredArgsConstructor
 public class CommonUserServiceImpl implements CommonUserService {
 
-    private final ModelMapper mapper;
-    private final CommonUserRepository repository;
-    private final TransactionRepository transactionRepository;
-    private final PagedResourcesAssembler pagedResourcesAssembler;
+  private final ModelMapper mapper;
+  private final CommonUserRepository repository;
+  private final TransactionRepository transactionRepository;
+  private final PagedResourcesAssembler pagedResourcesAssembler;
 
-    @Override
-    public CommonUserDTO save(CommonUserDTO entity) {
-        Optional<CommonUser> cpfAlreadyExists = repository.findByCpf(entity.getCpf());
+  @Override
+  public CommonUserDTO save(CommonUserDTO entity) {
+    Optional<CommonUser> cpfAlreadyExists = repository.findByCpf(entity.getCpf());
 
-        if(cpfAlreadyExists.isPresent())
-            throw new BadRequestException("Cpf must be unique");
+    if (cpfAlreadyExists.isPresent()) throw new BadRequestException("Cpf must be unique");
 
-        Optional<CommonUser> emailAlreadyExists = repository.findByEmail(entity.getEmail());
+    Optional<CommonUser> emailAlreadyExists = repository.findByEmail(entity.getEmail());
 
-        if (emailAlreadyExists.isPresent())
-            throw new BadRequestException("Email must be unique");
+    if (emailAlreadyExists.isPresent()) throw new BadRequestException("Email must be unique");
 
-        CommonUser commonUser = repository.save(mapper.map(entity, CommonUser.class));
+    CommonUser commonUser = repository.save(mapper.map(entity, CommonUser.class));
 
-        return mapper.map(commonUser, CommonUserDTO.class);
-    }
+    return mapper.map(commonUser, CommonUserDTO.class);
+  }
 
-    @Override
-    public CommonUserDTO findById(UUID id) {
-        CommonUser commonUser = repository.findById(id).orElseThrow(NotFoundException::new);
-        CommonUserDTO dto = mapper.map(commonUser, CommonUserDTO.class);
+  @Override
+  public CommonUserDTO findById(UUID id) {
+    CommonUser commonUser = repository.findById(id).orElseThrow(NotFoundException::new);
+    CommonUserDTO dto = mapper.map(commonUser, CommonUserDTO.class);
 
-        dto.add(linkTo(methodOn(CommonUserController.class).findById(id)).withSelfRel());
+    dto.add(linkTo(methodOn(CommonUserController.class).findById(id)).withSelfRel());
 
-        return dto;
-    }
+    return dto;
+  }
 
-    @Override
-    public PagedModel<EntityModel<TransactionDTO>> findTransactions(UUID id, Pageable pageable) {
+  @Override
+  public PagedModel<EntityModel<TransactionDTO>> findTransactions(UUID id, Pageable pageable) {
 
-        boolean isCommonUserPresent = repository.findById(id).isPresent();
+    boolean isCommonUserPresent = repository.findById(id).isPresent();
 
-        if(!isCommonUserPresent) throw new NotFoundException();
+    if (!isCommonUserPresent) throw new NotFoundException();
 
-        Page<TransactionDTO> transactionsDtoPage = transactionRepository.findAllOwnerTransactions(id, pageable)
-                .map(el -> mapper.map(el, TransactionDTO.class));
+    Page<TransactionDTO> transactionsDtoPage =
+        transactionRepository
+            .findAllOwnerTransactions(id, pageable)
+            .map(el -> mapper.map(el, TransactionDTO.class));
 
-        transactionsDtoPage = transactionsDtoPage.map(el ->
-                el.add(linkTo(methodOn(TransactionController.class).findById(el.getKey())).withSelfRel()));
+    transactionsDtoPage =
+        transactionsDtoPage.map(
+            el ->
+                el.add(
+                    linkTo(methodOn(TransactionController.class).findById(el.getKey()))
+                        .withSelfRel()));
 
-        Link link = linkTo(methodOn(CommonUserController.class)
-                .getUserTransactions(id, pageable.getPageNumber(), pageable.getPageSize())).withSelfRel();
+    Link link =
+        linkTo(
+                methodOn(CommonUserController.class)
+                    .getUserTransactions(id, pageable.getPageNumber(), pageable.getPageSize()))
+            .withSelfRel();
 
-        return pagedResourcesAssembler.toModel(transactionsDtoPage, link);
-    }
+    return pagedResourcesAssembler.toModel(transactionsDtoPage, link);
+  }
 }

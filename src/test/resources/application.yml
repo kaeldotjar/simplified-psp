@@ -1,10 +1,7 @@
+server:
+  port: 8888
 spring:
-  application:
-    name: simplified-psp
   datasource:
-    url: jdbc:mysql://localhost:3306/sps_database?useTimezone=true&serverTimezone=UTC
-    username: root
-    password: root
     driverClassName: com.mysql.cj.jdbc.Driver
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
@@ -14,6 +11,11 @@ spring:
     properties:
       hibernate:
         format_sql: true
+  flyway:
+    url: jdbc:mysql://${db.host:localhost}:${db.port:3306}/${db.name:sps_database}
+    user: ${db.username:root}
+    password: ${db.password:root}
+    enabled: true
 spring-doc:
   paths-to-match: /api/**/v1/**
   swagger-ui:

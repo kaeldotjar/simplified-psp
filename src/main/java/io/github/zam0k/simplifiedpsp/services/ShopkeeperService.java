@@ -10,8 +10,11 @@ import java.util.UUID;
 
 public interface ShopkeeperService {
 
-    ShopkeeperDTO save(ShopkeeperDTO entity);
-    PagedModel<EntityModel<ShopkeeperDTO>> findAll(Pageable pageable);
-    ShopkeeperDTO findById(UUID id);
-    PagedModel<EntityModel<TransactionDTO>> findTransactions(UUID id, Pageable pageable);
+  ShopkeeperDTO save(ShopkeeperDTO entity);
+
+  PagedModel<EntityModel<ShopkeeperDTO>> findAll(Pageable pageable);
+
+  ShopkeeperDTO findById(UUID id);
+
+  PagedModel<EntityModel<TransactionDTO>> findTransactions(UUID id, Pageable pageable);
 }

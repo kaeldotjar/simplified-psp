@@ -7,8 +7,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ServiceConfig {
 
-    @Bean
-    public PaymentNotifier paymentNotifier() {
-        return new PaymentNotifier();
-    }
+  @Bean
+  public PaymentNotifier paymentNotifier() {
+    return new PaymentNotifier();
+  }
 }

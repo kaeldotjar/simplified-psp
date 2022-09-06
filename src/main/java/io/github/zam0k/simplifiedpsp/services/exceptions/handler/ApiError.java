@@ -2,12 +2,14 @@ package io.github.zam0k.simplifiedpsp.services.exceptions.handler;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
 @Getter
+@NoArgsConstructor
 @AllArgsConstructor
 public class ApiError {
     private LocalDateTime timestamp;
