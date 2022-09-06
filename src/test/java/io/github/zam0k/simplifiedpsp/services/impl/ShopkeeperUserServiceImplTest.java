@@ -1,9 +1,8 @@
-package io.github.zam0k.simplifiedpsp.services.impl.unittests;
+package io.github.zam0k.simplifiedpsp.services.impl;
 
 import io.github.zam0k.simplifiedpsp.controllers.dto.ShopkeeperDTO;
 import io.github.zam0k.simplifiedpsp.domain.Shopkeeper;
 import io.github.zam0k.simplifiedpsp.repositories.ShopkeeperRepository;
-import io.github.zam0k.simplifiedpsp.services.impl.ShopkeeperServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -35,7 +34,7 @@ class ShopkeeperUserServiceImplTest {
 
   @Mock private ShopkeeperRepository repository;
   @Mock private ModelMapper mapper;
-  @Mock private PagedResourcesAssembler assembler;
+  @Mock private PagedResourcesAssembler<?> assembler;
 
   private Shopkeeper entity;
   private ShopkeeperDTO entityDTO;

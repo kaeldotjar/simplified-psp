@@ -1,10 +1,9 @@
-package io.github.zam0k.simplifiedpsp.services.impl.unittests;
+package io.github.zam0k.simplifiedpsp.services.impl;
 
 import io.github.zam0k.simplifiedpsp.controllers.dto.CommonUserDTO;
 import io.github.zam0k.simplifiedpsp.domain.CommonUser;
 import io.github.zam0k.simplifiedpsp.repositories.CommonUserRepository;
 import io.github.zam0k.simplifiedpsp.services.exceptions.BadRequestException;
-import io.github.zam0k.simplifiedpsp.services.impl.CommonUserServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
