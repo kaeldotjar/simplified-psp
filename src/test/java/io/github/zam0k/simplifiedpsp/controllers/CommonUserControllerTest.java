@@ -1,5 +1,6 @@
 package io.github.zam0k.simplifiedpsp.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.zam0k.simplifiedpsp.configs.TestConfig;
 import io.github.zam0k.simplifiedpsp.containers.ContainerInit;
 import io.github.zam0k.simplifiedpsp.containers.MySQL;
@@ -10,7 +11,6 @@ import io.github.zam0k.simplifiedpsp.repositories.TransactionRepository;
 import io.github.zam0k.simplifiedpsp.services.exceptions.handler.ApiError;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -23,7 +23,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -37,7 +36,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
-import static org.testcontainers.shaded.com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
 @SpringBootTest(webEnvironment = DEFINED_PORT)
 @AutoConfigureTestDatabase(replace = NONE)
@@ -53,26 +51,23 @@ class CommonUserControllerTest {
   public static final BigDecimal BALANCE =
       BigDecimal.valueOf(100.00).setScale(2, RoundingMode.CEILING);
 
+  private static final String BASE_PATH = "/api/common-users/v1/";
+  private static final String PATH_TRANSACTIONS_ID = "{id}/transactions";
+
   private CommonUser requestBody;
   private String entityId;
-  private static final ObjectMapper mapper = new ObjectMapper();
-  @Container
-  private static final MySQL MYSQL_CONTAINER = MySQL.getInstance();
 
+  @Container private static final MySQL MYSQL_CONTAINER = MySQL.getInstance();
+  @Autowired private ObjectMapper mapper;
   @Autowired private CommonUserRepository repository;
   @MockBean private TransactionRepository transactionRepository;
 
-  @BeforeAll
-  static void init() {
-    mapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
-  }
-
   @BeforeEach
   void setUp() {
-    requestBody = new CommonUser(null, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE);
+    initCommonUser();
     Response response =
         given()
-            .basePath("/api/common-users/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .body(requestBody)
@@ -92,7 +87,7 @@ class CommonUserControllerTest {
     requestBody.setCpf("104.920.880-39");
     Response response =
         given()
-            .basePath("/api/common-users/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .body(requestBody)
@@ -111,7 +106,7 @@ class CommonUserControllerTest {
   void whenFindByIdReturnSuccess() throws IOException {
     Response response =
         given()
-            .basePath("/api/common-users/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .pathParams("id", entityId)
@@ -143,12 +138,12 @@ class CommonUserControllerTest {
 
     Response response =
         given()
-            .basePath("/api/common-users/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .pathParams("id", entityId)
             .when()
-            .get("{id}/transactions");
+            .get(PATH_TRANSACTIONS_ID);
 
     String content = response.getBody().asString();
 
@@ -166,12 +161,12 @@ class CommonUserControllerTest {
 
     Response response =
         given()
-            .basePath("/api/common-users/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .pathParams("id", entityId)
             .when()
-            .get("{id}/transactions");
+            .get(PATH_TRANSACTIONS_ID);
 
     // TO-DO: better assertions
     assertAll(() -> assertNotNull(response), () -> assertEquals(204, response.getStatusCode()));
@@ -183,12 +178,12 @@ class CommonUserControllerTest {
 
     Response response =
         given()
-            .basePath("/api/common-users/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .pathParams("id", id)
             .when()
-            .get("{id}/transactions");
+            .get(PATH_TRANSACTIONS_ID);
 
     ApiError error = response.getBody().as(ApiError.class);
 
@@ -204,5 +199,9 @@ class CommonUserControllerTest {
   private String getEntityId(Response entity) {
     String[] url = entity.getHeader("Location").split("/");
     return url[url.length - 1];
+  }
+
+  private void initCommonUser() {
+    requestBody = new CommonUser(null, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE);
   }
 }

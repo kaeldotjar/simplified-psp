@@ -34,30 +34,29 @@ class CommonUserServiceImplTest {
   public static final String PASSWORD = "123456";
   public static final BigDecimal BALANCE = BigDecimal.valueOf(100.00);
 
-  @InjectMocks private CommonUserServiceImpl service;
+  public static final String NOT_FOUND = "Object cannot be found";
+  public static final String EMAIL_BAD_REQUEST = "Email must be unique";
+  public static final String CPF_BAD_REQUEST = "Cpf must be unique";
 
+  private CommonUser commonUser;
+  private CommonUserDTO commonUserDTO;
+
+  @InjectMocks private CommonUserServiceImpl service;
   @Mock private CommonUserRepository repository;
   @Mock private ModelMapper mapper;
 
-  private CommonUser entity;
-  private CommonUserDTO entityDTO;
-  private Optional<CommonUser> optionalEntity;
-
-
   @BeforeEach
   void setUp() {
-    entity = new CommonUser(ID, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE);
-    entityDTO = new CommonUserDTO(ID, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE);
-    optionalEntity = Optional.of(entity);
+    initCommonUser();
   }
 
   @Test
   void whenSaveThenReturnSuccess() {
-    when(mapper.map(any(CommonUserDTO.class), any())).thenReturn(entity);
-    when(mapper.map(any(CommonUser.class), any())).thenReturn(entityDTO);
-    Mockito.when(repository.save(any())).thenReturn(entity);
+    when(mapper.map(any(CommonUserDTO.class), any())).thenReturn(commonUser);
+    when(mapper.map(any(CommonUser.class), any())).thenReturn(commonUserDTO);
+    Mockito.when(repository.save(any())).thenReturn(commonUser);
 
-    CommonUserDTO response = service.save(entityDTO);
+    CommonUserDTO response = service.save(commonUserDTO);
 
     assertAll(
         () -> assertNotNull(response),
@@ -72,36 +71,36 @@ class CommonUserServiceImplTest {
 
   @Test
   void whenSaveRepeatedCPFThenReturnBadRequestException() {
-    when(repository.findByCpf(anyString())).thenReturn(optionalEntity);
+    when(repository.findByCpf(anyString())).thenReturn(Optional.of(commonUser));
 
     try {
-      service.save(entityDTO);
+      service.save(commonUserDTO);
     } catch (Exception ex) {
       assertAll(
           () -> assertEquals(BadRequestException.class, ex.getClass()),
-          () -> assertEquals("Cpf must be unique", ex.getMessage()));
+          () -> assertEquals(CPF_BAD_REQUEST, ex.getMessage()));
     }
   }
 
   @Test
   void whenSaveRepeatedEmailThenReturnBadRequestException() {
-    when(repository.findByEmail(anyString())).thenReturn(optionalEntity);
+    when(repository.findByEmail(anyString())).thenReturn(Optional.of(commonUser));
 
     try {
-      service.save(entityDTO);
+      service.save(commonUserDTO);
     } catch (Exception ex) {
       assertAll(
           () -> assertEquals(BadRequestException.class, ex.getClass()),
-          () -> assertEquals("Email must be unique", ex.getMessage()));
+          () -> assertEquals(EMAIL_BAD_REQUEST, ex.getMessage()));
     }
   }
 
   @Test
   void whenFindByIdThenReturnSuccess() {
-    when(mapper.map(any(CommonUser.class), any())).thenReturn(entityDTO);
-    Mockito.when(repository.findById(any())).thenReturn(optionalEntity);
+    when(mapper.map(any(CommonUser.class), any())).thenReturn(commonUserDTO);
+    Mockito.when(repository.findById(any())).thenReturn(Optional.of(commonUser));
 
-    CommonUserDTO response = service.findById(entityDTO.getKey());
+    CommonUserDTO response = service.findById(commonUserDTO.getKey());
 
     assertAll(
         () -> assertNotNull(response),
@@ -117,11 +116,11 @@ class CommonUserServiceImplTest {
   @Test
   void whenFindByIdThenReturnNotFoundException() {
     try {
-      service.findById(entityDTO.getKey());
+      service.findById(commonUserDTO.getKey());
     } catch (Exception ex) {
       assertAll(
           () -> assertEquals(NotFoundException.class, ex.getClass()),
-          () -> assertEquals("Object cannot be found", ex.getMessage()));
+          () -> assertEquals(NOT_FOUND, ex.getMessage()));
     }
   }
 
@@ -131,8 +130,13 @@ class CommonUserServiceImplTest {
       service.findTransactions(UUID.randomUUID(), PageRequest.of(0, 10));
     } catch (Exception ex) {
       assertAll(
-              () -> assertEquals(NotFoundException.class, ex.getClass()),
-              () -> assertEquals("Object cannot be found", ex.getMessage()));
+          () -> assertEquals(NotFoundException.class, ex.getClass()),
+          () -> assertEquals(NOT_FOUND, ex.getMessage()));
     }
+  }
+
+  private void initCommonUser() {
+    commonUser = new CommonUser(ID, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE);
+    commonUserDTO = new CommonUserDTO(ID, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE);
   }
 }

@@ -45,6 +45,11 @@ class TransactionServiceImplTest {
   public static final UUID PAYEE_ID = UUID.randomUUID();
   public static final BigDecimal PAYEE_BALANCE = BigDecimal.valueOf(100.00);
 
+  public static final String NOT_FOUND = "Object cannot be found";
+  public static final String FUNDS_BAD_REQUEST = "Insufficient funds";
+  public static final String TRANSACTION_REJECTED_BAD_REQUEST = "Transaction rejected";
+  public static final String SAME_ACCOUNT_BAD_REQUEST = "Can't transfer values to same account";
+
   @InjectMocks private TransactionServiceImpl service;
 
   @Mock private CommonUserRepository payerRepository;
@@ -56,27 +61,18 @@ class TransactionServiceImplTest {
 
   private TransactionDTO transactionDto;
   private Transaction transaction;
-  private Optional<Transaction> optionalTransaction;
   private CommonUser payer;
   private Shopkeeper payee;
-  private Optional<CommonUser> optionalPayer;
-  private Optional<Shopkeeper> optionalPayee;
+
 
   @BeforeEach
   void setUp() {
-    transactionDto =
-        new TransactionDTO(TRANS_ID, PAYER_ID, PAYEE_ID, TRANS_BALANCE, TRANS_TIMESTAMP);
-    transaction = new Transaction(TRANS_ID, PAYER_ID, PAYEE_ID, TRANS_BALANCE, TRANS_TIMESTAMP);
-    optionalTransaction = Optional.of(transaction);
-    payer = new CommonUser(PAYER_ID, "", "", "", "", PAYER_BALANCE);
-    payee = new Shopkeeper(PAYEE_ID, "", "", "", "", PAYEE_BALANCE);
-    optionalPayer = Optional.of(payer);
-    optionalPayee = Optional.of(payee);
+    initObjects();
   }
 
   @Test
   void whenSaveTransactionReturnSuccess() {
-    when(payerRepository.findById(any())).thenReturn(optionalPayer);
+    when(payerRepository.findById(any())).thenReturn(Optional.of(payer));
     when(payeeRepository.findById(any())).thenReturn(Optional.of(payee));
     when(restTemplate.getForEntity(anyString(), any())).thenReturn(new ResponseEntity<>(OK));
     doNothing().when(notifier).notifyPayee(any(), any());
@@ -108,7 +104,7 @@ class TransactionServiceImplTest {
     } catch (Exception ex) {
       assertAll(
           () -> assertEquals(BadRequestException.class, ex.getClass()),
-          () -> assertEquals("Insufficient funds", ex.getMessage()));
+          () -> assertEquals(FUNDS_BAD_REQUEST, ex.getMessage()));
     }
   }
 
@@ -125,7 +121,7 @@ class TransactionServiceImplTest {
     } catch (Exception ex) {
       assertAll(
           () -> assertEquals(BadRequestException.class, ex.getClass()),
-          () -> assertEquals("Transaction rejected", ex.getMessage()));
+          () -> assertEquals(TRANSACTION_REJECTED_BAD_REQUEST, ex.getMessage()));
     }
   }
 
@@ -136,15 +132,28 @@ class TransactionServiceImplTest {
     } catch (Exception ex) {
       assertAll(
           () -> assertEquals(NotFoundException.class, ex.getClass()),
-          () -> assertEquals("Object cannot be found", ex.getMessage()));
+          () -> assertEquals(NOT_FOUND, ex.getMessage()));
+    }
+  }
+
+  @Test
+  void whenSaveTransactionReturnBadRequestException() {
+    transactionDto.setPayer(PAYEE_ID);
+
+    try {
+      service.create(transactionDto);
+    } catch (Exception ex) {
+      assertAll(
+              () -> assertEquals(BadRequestException.class, ex.getClass()),
+              () -> assertEquals(SAME_ACCOUNT_BAD_REQUEST, ex.getMessage()));
     }
   }
 
   @Test
   void whenFindByIdReturnSuccess() {
-    when(repository.findById(TRANS_ID)).thenReturn(optionalTransaction);
-    when(payeeRepository.findById(PAYEE_ID)).thenReturn(optionalPayee);
-    when(payerRepository.findById(PAYER_ID)).thenReturn(optionalPayer);
+    when(repository.findById(TRANS_ID)).thenReturn(Optional.of(transaction));
+    when(payeeRepository.findById(PAYEE_ID)).thenReturn(Optional.of(payee));
+    when(payerRepository.findById(PAYER_ID)).thenReturn(Optional.of(payer));
     when(mapper.map(any(Transaction.class), any())).thenReturn(transactionDto);
 
     TransactionDTO response = service.findById(TRANS_ID);
@@ -169,7 +178,15 @@ class TransactionServiceImplTest {
     } catch (Exception ex) {
       assertAll(
           () -> assertEquals(NotFoundException.class, ex.getClass()),
-          () -> assertEquals("Object cannot be found", ex.getMessage()));
+          () -> assertEquals(NOT_FOUND, ex.getMessage()));
     }
+  }
+
+  private void initObjects() {
+    transactionDto =
+            new TransactionDTO(TRANS_ID, PAYER_ID, PAYEE_ID, TRANS_BALANCE, TRANS_TIMESTAMP);
+    transaction = new Transaction(TRANS_ID, PAYER_ID, PAYEE_ID, TRANS_BALANCE, TRANS_TIMESTAMP);
+    payer = new CommonUser(PAYER_ID, "", "", "", "", PAYER_BALANCE);
+    payee = new Shopkeeper(PAYEE_ID, "", "", "", "", PAYEE_BALANCE);
   }
 }
