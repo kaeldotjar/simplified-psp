@@ -1,0 +1,39 @@
+version: '3.9'
+services:
+  mysqldb:
+    image: 'mysql:8.0.29'
+    restart: always
+    environment:
+      TZ: America/Sao_Paulo
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: docker
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: sps_database
+      MYSQL_ROOT_HOST: '%'
+      MYSQL_TCP_PORT: 3307
+    ports:
+      - "3307:3307"
+    expose:
+      - 3307
+    networks:
+      - simplified-psp-network
+  simplified-psp:
+    image: simplified-psp:latest
+    restart: always
+    build: .
+    working_dir: /simplified-psp
+    environment:
+      TZ: America/Sao_Paulo
+      SPRING.DATASOURCE.URL: jdbc:mysql://mysqldb:3307/sps_database?useTimezone=true&serverTimezone=UTC
+      SPRING.DATASOURCE.USERNAME: root
+      SPRING.DATASOURCE.PASSWORD: root
+    ports:
+      - "80:80"
+    command: mvn spring-boot:run
+    depends_on:
+      - mysqldb
+    networks:
+      - simplified-psp-network
+networks:
+  simplified-psp-network:
+    driver: bridge
