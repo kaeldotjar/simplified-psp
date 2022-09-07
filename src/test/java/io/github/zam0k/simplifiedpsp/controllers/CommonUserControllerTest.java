@@ -8,6 +8,7 @@ import io.github.zam0k.simplifiedpsp.domain.Transaction;
 import io.github.zam0k.simplifiedpsp.repositories.CommonUserRepository;
 import io.github.zam0k.simplifiedpsp.repositories.TransactionRepository;
 import io.github.zam0k.simplifiedpsp.services.exceptions.handler.ApiError;
+import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
@@ -96,8 +98,7 @@ class CommonUserControllerTest {
             .when()
             .post();
 
-    String[] url = entity.getHeader("Location").split("/");
-    String id = url[url.length - 1];
+    String id = getEntityId(entity);
 
     Response response =
         given()
@@ -108,11 +109,13 @@ class CommonUserControllerTest {
             .when()
             .get("{id}");
 
-    CommonUser responseBody = mapper.readValue(response.getBody().asString(), CommonUser.class);
+    String content = response.getBody().asString();
+    CommonUser responseBody = mapper.readValue(content, CommonUser.class);
 
     assertAll(
         () -> assertNotNull(response),
         () -> assertEquals(200, response.getStatusCode()),
+        () -> assertTrue(content.contains("_links\":{\"self\":{\"href\":")),
         () -> assertEquals(UUID.fromString(id), responseBody.getId()),
         () -> assertEquals(FULL_NAME, responseBody.getFullName()),
         () -> assertEquals(EMAIL, responseBody.getEmail()),
@@ -122,7 +125,7 @@ class CommonUserControllerTest {
 
   @Test
   void whenGetUserTransactionsReturnSuccess() {
-    Response firstUser =
+    Response payee =
         given()
             .basePath("/api/common-users/v1/")
             .port(TestConfig.SERVER_PORT)
@@ -131,13 +134,12 @@ class CommonUserControllerTest {
             .when()
             .post();
 
-    String[] url = firstUser.getHeader("Location").split("/");
-    UUID firstUserId = UUID.fromString(url[url.length - 1]);
+    UUID payeeId = UUID.fromString(getEntityId(payee));
 
     requestBody.setEmail("anotherEmail@gmail.com");
     requestBody.setCpf("192.169.600-19");
 
-    Response secondUser =
+    Response payer =
         given()
             .basePath("/api/common-users/v1/")
             .port(TestConfig.SERVER_PORT)
@@ -146,13 +148,10 @@ class CommonUserControllerTest {
             .when()
             .post();
 
-    url = secondUser.getHeader("Location").split("/");
-
-    UUID secondUserId = UUID.fromString(url[url.length - 1]);
+    UUID payerId = UUID.fromString(getEntityId(payer));
 
     Transaction transaction =
-        new Transaction(
-            null, firstUserId, secondUserId, BigDecimal.valueOf(50.00), LocalDateTime.now());
+        new Transaction(null, payerId, payeeId, BigDecimal.valueOf(50.00), LocalDateTime.now());
 
     transactionRepository.save(transaction);
 
@@ -161,16 +160,23 @@ class CommonUserControllerTest {
             .basePath("/api/common-users/v1/")
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
-            .pathParams("id", firstUserId)
+            .pathParams("id", payeeId)
             .when()
             .get("{id}/transactions");
 
     String content = response.getBody().asString();
+    JsonPath jsonPath = JsonPath.from(content);
+    Map<String, String> transactionJson =
+        jsonPath.getMap("_embedded.transactions[0]", String.class, String.class);
+
+    response.body().asString();
+
     // TO-DO: better assertions
     assertAll(
         () -> assertNotNull(response),
         () -> assertEquals(200, response.getStatusCode()),
-        () -> assertTrue(content.contains("_links\":{\"self\":{\"href\":")));
+        () -> assertNotNull(content),
+        () -> assertNotNull(transactionJson.get("_links")));
   }
 
   @Test
@@ -184,8 +190,7 @@ class CommonUserControllerTest {
             .when()
             .post();
 
-    String[] url = entity.getHeader("Location").split("/");
-    String id = url[url.length - 1];
+    String id = getEntityId(entity);
 
     Response response =
         given()
@@ -222,5 +227,10 @@ class CommonUserControllerTest {
         () -> assertEquals("Object cannot be found", error.getError().get(0)),
         () -> assertNotNull(error.getTimestamp()),
         () -> assertNotNull(error.getPath()));
+  }
+
+  private String getEntityId(Response entity) {
+    String[] url = entity.getHeader("Location").split("/");
+    return url[url.length - 1];
   }
 }
