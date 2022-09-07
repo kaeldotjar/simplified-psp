@@ -3,16 +3,12 @@ package io.github.zam0k.simplifiedpsp.controllers;
 import io.github.zam0k.simplifiedpsp.configs.TestConfig;
 import io.github.zam0k.simplifiedpsp.containers.ContainerInit;
 import io.github.zam0k.simplifiedpsp.containers.MySQL;
-import io.github.zam0k.simplifiedpsp.domain.CommonUser;
+import io.github.zam0k.simplifiedpsp.domain.Shopkeeper;
 import io.github.zam0k.simplifiedpsp.domain.Transaction;
-import io.github.zam0k.simplifiedpsp.repositories.CommonUserRepository;
+import io.github.zam0k.simplifiedpsp.repositories.ShopkeeperRepository;
 import io.github.zam0k.simplifiedpsp.repositories.TransactionRepository;
-import io.github.zam0k.simplifiedpsp.services.exceptions.handler.ApiError;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -23,6 +19,7 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.shaded.com.fasterxml.jackson.databind.DeserializationFeature;
 import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -32,52 +29,49 @@ import java.util.List;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
-import static java.util.Collections.EMPTY_LIST;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
-import static org.testcontainers.shaded.com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 
 @SpringBootTest(webEnvironment = DEFINED_PORT)
 @AutoConfigureTestDatabase(replace = NONE)
 @ContextConfiguration(initializers = ContainerInit.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @Testcontainers
-class CommonUserControllerTest {
-
-  public static final String FULL_NAME = "Foo Bar";
-  public static final String CPF = "275.974.380-28";
-  public static final String EMAIL = "foobar@gmail.com";
-  public static final String PASSWORD = "randomPassword";
+class ShopkeeperControllerTest {
+  public static final String FULL_NAME = "subject name";
+  public static final String CNPJ = "68.340.815/0001-53";
+  public static final String EMAIL = "subject@gmail.com";
+  public static final String PASSWORD = "123456";
   public static final BigDecimal BALANCE =
       BigDecimal.valueOf(100.00).setScale(2, RoundingMode.CEILING);
-
-  private CommonUser requestBody;
-  private String entityId;
   private static final ObjectMapper mapper = new ObjectMapper();
-  @Container
-  private static final MySQL MYSQL_CONTAINER = MySQL.getInstance();
 
-  @Autowired private CommonUserRepository repository;
+  private Shopkeeper requestBody;
+  private String entityId;
+
+  @Container private static final MySQL MYSQL_CONTAINER = MySQL.getInstance();
   @MockBean private TransactionRepository transactionRepository;
+  @Autowired private ShopkeeperRepository repository;
 
   @BeforeAll
   static void init() {
-    mapper.configure(FAIL_ON_UNKNOWN_PROPERTIES, false);
+    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
   }
 
   @BeforeEach
   void setUp() {
-    requestBody = new CommonUser(null, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE);
+    requestBody = new Shopkeeper(null, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
     Response response =
         given()
-            .basePath("/api/common-users/v1/")
+            .basePath("/api/shopkeepers/v1/")
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .body(requestBody)
             .when()
             .post();
+
     entityId = getEntityId(response);
   }
 
@@ -88,30 +82,50 @@ class CommonUserControllerTest {
 
   @Test
   void whenCreateReturnSuccess() {
-    requestBody.setEmail("email@gmail.com");
-    requestBody.setCpf("104.920.880-39");
+    requestBody.setEmail("newEmail@gmail.com");
+    requestBody.setCnpj("05.322.807/0001-64");
     Response response =
         given()
-            .basePath("/api/common-users/v1/")
+            .basePath("/api/shopkeepers/v1/")
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .body(requestBody)
             .when()
             .post();
 
-    System.out.println(response.getBody().prettyPrint());
+    System.out.println(response.prettyPrint());
 
-    assertAll(
+    Assertions.assertAll(
         () -> assertNotNull(response),
         () -> assertEquals(201, response.getStatusCode()),
         () -> assertNotNull(response.getHeader("Location")));
   }
 
   @Test
+  void whenFindAllReturnSuccess() {
+    Response response =
+        given()
+            .basePath("/api/shopkeepers/v1/")
+            .port(TestConfig.SERVER_PORT)
+            .contentType(TestConfig.CONTENT_TYPE_JSON)
+            .when()
+            .get();
+
+    String content = response.getBody().asString();
+
+    System.out.println(content);
+
+    Assertions.assertAll(
+        () -> assertNotNull(response),
+        () -> assertEquals(200, response.getStatusCode()),
+        () -> assertNotNull(response.getBody()));
+  }
+
+  @Test
   void whenFindByIdReturnSuccess() throws IOException {
     Response response =
         given()
-            .basePath("/api/common-users/v1/")
+            .basePath("/api/shopkeepers/v1/")
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .pathParams("id", entityId)
@@ -119,31 +133,34 @@ class CommonUserControllerTest {
             .get("{id}");
 
     String content = response.getBody().asString();
-    CommonUser responseBody = mapper.readValue(content, CommonUser.class);
+    Shopkeeper responseBody = mapper.readValue(content, Shopkeeper.class);
 
     assertAll(
         () -> assertNotNull(response),
         () -> assertEquals(200, response.getStatusCode()),
-        () -> assertTrue(content.contains("_links\":{\"self\":{\"href\":")),
         () -> assertEquals(UUID.fromString(entityId), responseBody.getId()),
         () -> assertEquals(FULL_NAME, responseBody.getFullName()),
         () -> assertEquals(EMAIL, responseBody.getEmail()),
-        () -> assertEquals(CPF, responseBody.getCpf()),
+        () -> assertEquals(CNPJ, responseBody.getCnpj()),
         () -> assertEquals(BALANCE, responseBody.getBalance()));
   }
 
   @Test
   void whenGetUserTransactionsReturnSuccess() {
+
     Transaction transaction =
         new Transaction(
-            null, UUID.randomUUID(), UUID.fromString(entityId), BigDecimal.valueOf(50.0), null);
+            null, UUID.fromString(entityId), UUID.randomUUID(), BigDecimal.valueOf(50.0), null);
 
-    Mockito.when(transactionRepository.findAllOwnerTransactions(any(), any()))
+    Mockito.when(transactionRepository.findAllByPayee(any(), any()))
         .thenReturn(new PageImpl<>(List.of(transaction)));
+
+    requestBody.setEmail("anotherEmail@gmail.com");
+    requestBody.setCnpj("192.169.600-19");
 
     Response response =
         given()
-            .basePath("/api/common-users/v1/")
+            .basePath("/api/shopkeepers/v1/")
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .pathParams("id", entityId)
@@ -152,53 +169,15 @@ class CommonUserControllerTest {
 
     String content = response.getBody().asString();
 
+    System.out.println(response.getBody().prettyPrint());
+
+    System.out.println(content);
+
     // TO-DO: better assertions
     assertAll(
         () -> assertNotNull(response),
         () -> assertEquals(200, response.getStatusCode()),
         () -> assertNotNull(content));
-  }
-
-  @Test
-  void whenGetUserTransactionsReturnNoContent() {
-    Mockito.when(transactionRepository.findAllOwnerTransactions(any(), any()))
-        .thenReturn(new PageImpl<Transaction>(EMPTY_LIST));
-
-    Response response =
-        given()
-            .basePath("/api/common-users/v1/")
-            .port(TestConfig.SERVER_PORT)
-            .contentType(TestConfig.CONTENT_TYPE_JSON)
-            .pathParams("id", entityId)
-            .when()
-            .get("{id}/transactions");
-
-    // TO-DO: better assertions
-    assertAll(() -> assertNotNull(response), () -> assertEquals(204, response.getStatusCode()));
-  }
-
-  @Test
-  void whenGetUserTransactionsReturnNotFound() {
-    String id = "66a053d3-cc0b-4d99-9a71-abf6a27f2e59";
-
-    Response response =
-        given()
-            .basePath("/api/common-users/v1/")
-            .port(TestConfig.SERVER_PORT)
-            .contentType(TestConfig.CONTENT_TYPE_JSON)
-            .pathParams("id", id)
-            .when()
-            .get("{id}/transactions");
-
-    ApiError error = response.getBody().as(ApiError.class);
-
-    // TO-DO: better assertions
-    assertAll(
-        () -> assertNotNull(response),
-        () -> assertEquals(404, response.getStatusCode()),
-        () -> assertEquals("Object cannot be found", error.getError().get(0)),
-        () -> assertNotNull(error.getTimestamp()),
-        () -> assertNotNull(error.getPath()));
   }
 
   private String getEntityId(Response entity) {

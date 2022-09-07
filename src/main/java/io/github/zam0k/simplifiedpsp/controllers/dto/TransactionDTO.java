@@ -1,5 +1,6 @@
 package io.github.zam0k.simplifiedpsp.controllers.dto;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import lombok.AllArgsConstructor;
@@ -35,6 +36,7 @@ public class TransactionDTO extends RepresentationModel<TransactionDTO> {
   @DecimalMin(value = "0.01", message = "Minimum value must be 0.01")
   private BigDecimal value;
 
+  @JsonFormat(pattern = "yyyy-MM-dd'T'HH:mm:ss", shape = JsonFormat.Shape.STRING)
   @Null(message = "Timestamp must be null")
   private LocalDateTime timestamp;
 }

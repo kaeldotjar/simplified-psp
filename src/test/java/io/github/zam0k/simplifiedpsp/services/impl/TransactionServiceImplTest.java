@@ -131,7 +131,6 @@ class TransactionServiceImplTest {
 
   @Test
   void whenSaveTransactionReturnNotFoundException() {
-    transactionDto.setPayer(UUID.randomUUID());
     try {
       service.create(transactionDto);
     } catch (Exception ex) {

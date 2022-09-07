@@ -50,7 +50,9 @@ public class TransactionServiceImpl implements TransactionService {
   @Override
   public TransactionDTO create(TransactionDTO entity) {
 
-    if (entity.getPayee() == entity.getPayer()) throw new BadRequestException("Cant ");
+    // TO-DO: Add a better BadRequest message
+    if (entity.getPayee() == entity.getPayer())
+      throw new BadRequestException("Can't transfer values to same account");
 
     BigDecimal value = entity.getValue();
     IPayer payer = getPayer(entity);
@@ -71,19 +73,10 @@ public class TransactionServiceImpl implements TransactionService {
   public TransactionDTO findById(UUID id) {
     Transaction transaction = repository.findById(id).orElseThrow(NotFoundException::new);
     TransactionDTO dto = mapper.map(transaction, TransactionDTO.class);
+
+    Link payeeLink = getPayeeLink(dto);
     Link payerLink =
         linkTo(methodOn(CommonUserController.class).findById(dto.getPayer())).withRel("payer");
-    Link payeeLink;
-
-    boolean isPayeeACommonUser = getPayee(dto).getClass() == CommonUser.class;
-
-    if (isPayeeACommonUser) {
-      payeeLink =
-          linkTo(methodOn(CommonUserController.class).findById(dto.getPayee())).withRel("payee");
-    } else {
-      payeeLink =
-          linkTo(methodOn(ShopkeeperController.class).findById(dto.getPayee())).withRel("payee");
-    }
 
     dto.add(
         linkTo(methodOn(TransactionController.class).findById(id)).withSelfRel(),
@@ -91,6 +84,16 @@ public class TransactionServiceImpl implements TransactionService {
         payeeLink);
 
     return dto;
+  }
+
+  private Link getPayeeLink(TransactionDTO dto) {
+    final String PAYEE = "payee";
+    boolean isPayeeACommonUser = getPayee(dto).getClass() == CommonUser.class;
+
+    if (isPayeeACommonUser)
+      return linkTo(methodOn(CommonUserController.class).findById(dto.getPayee())).withRel(PAYEE);
+
+    return linkTo(methodOn(ShopkeeperController.class).findById(dto.getPayee())).withRel(PAYEE);
   }
 
   @Transactional

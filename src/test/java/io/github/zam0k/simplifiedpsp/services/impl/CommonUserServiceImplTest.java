@@ -4,6 +4,7 @@ import io.github.zam0k.simplifiedpsp.controllers.dto.CommonUserDTO;
 import io.github.zam0k.simplifiedpsp.domain.CommonUser;
 import io.github.zam0k.simplifiedpsp.repositories.CommonUserRepository;
 import io.github.zam0k.simplifiedpsp.services.exceptions.BadRequestException;
+import io.github.zam0k.simplifiedpsp.services.exceptions.NotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -12,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
 
 import java.math.BigDecimal;
 import java.util.Optional;
@@ -40,6 +42,7 @@ class CommonUserServiceImplTest {
   private CommonUser entity;
   private CommonUserDTO entityDTO;
   private Optional<CommonUser> optionalEntity;
+
 
   @BeforeEach
   void setUp() {
@@ -90,6 +93,46 @@ class CommonUserServiceImplTest {
       assertAll(
           () -> assertEquals(BadRequestException.class, ex.getClass()),
           () -> assertEquals("Email must be unique", ex.getMessage()));
+    }
+  }
+
+  @Test
+  void whenFindByIdThenReturnSuccess() {
+    when(mapper.map(any(CommonUser.class), any())).thenReturn(entityDTO);
+    Mockito.when(repository.findById(any())).thenReturn(optionalEntity);
+
+    CommonUserDTO response = service.findById(entityDTO.getKey());
+
+    assertAll(
+        () -> assertNotNull(response),
+        () -> assertEquals(CommonUserDTO.class, response.getClass()),
+        () -> assertEquals(ID, response.getKey()),
+        () -> assertEquals(FULL_NAME, response.getFullName()),
+        () -> assertEquals(CPF, response.getCpf()),
+        () -> assertEquals(EMAIL, response.getEmail()),
+        () -> assertEquals(PASSWORD, response.getPassword()),
+        () -> assertEquals(BALANCE, response.getBalance()));
+  }
+
+  @Test
+  void whenFindByIdThenReturnNotFoundException() {
+    try {
+      service.findById(entityDTO.getKey());
+    } catch (Exception ex) {
+      assertAll(
+          () -> assertEquals(NotFoundException.class, ex.getClass()),
+          () -> assertEquals("Object cannot be found", ex.getMessage()));
+    }
+  }
+
+  @Test
+  void whenFindTransactionsReturnNotFoundException() {
+    try {
+      service.findTransactions(UUID.randomUUID(), PageRequest.of(0, 10));
+    } catch (Exception ex) {
+      assertAll(
+              () -> assertEquals(NotFoundException.class, ex.getClass()),
+              () -> assertEquals("Object cannot be found", ex.getMessage()));
     }
   }
 }
