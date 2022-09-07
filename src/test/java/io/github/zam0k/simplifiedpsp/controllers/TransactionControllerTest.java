@@ -1,7 +1,6 @@
 package io.github.zam0k.simplifiedpsp.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.github.zam0k.simplifiedpsp.configs.TestConfig;
 import io.github.zam0k.simplifiedpsp.containers.ContainerInit;
 import io.github.zam0k.simplifiedpsp.containers.MySQL;
@@ -13,6 +12,7 @@ import io.github.zam0k.simplifiedpsp.repositories.CommonUserRepository;
 import io.github.zam0k.simplifiedpsp.repositories.ShopkeeperRepository;
 import io.github.zam0k.simplifiedpsp.repositories.TransactionRepository;
 import io.restassured.response.Response;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,8 +33,6 @@ import java.math.RoundingMode;
 import java.util.Optional;
 import java.util.UUID;
 
-import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
-import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static io.restassured.RestAssured.given;
 import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.*;
@@ -47,51 +45,39 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @Testcontainers
 class TransactionControllerTest {
-  public static final BigDecimal TRANS_VALUE =
-      BigDecimal.valueOf(10.00).setScale(2, RoundingMode.CEILING);
-
+  public static final BigDecimal TRANS_VALUE = getFormattedBalance(10.00);
   public static final UUID PAYER_ID = randomUUID();
-  public static final BigDecimal PAYER_BALANCE =
-      BigDecimal.valueOf(100.00).setScale(2, RoundingMode.CEILING);
-
+  public static final BigDecimal PAYER_BALANCE = getFormattedBalance(100.00);
   public static final UUID PAYEE_ID = randomUUID();
-  public static final BigDecimal PAYEE_BALANCE =
-      BigDecimal.valueOf(100.00).setScale(2, RoundingMode.CEILING);
+  public static final BigDecimal PAYEE_BALANCE = getFormattedBalance(100.00);
 
-  private static final ObjectMapper mapper = new ObjectMapper();
+  private static final String BASE_PATH = "/api/transactions/v1/";
 
-  private Transaction requestBody;
+  private static Transaction requestBody;
   private static CommonUser payer;
   private static Shopkeeper payee;
   private Response transaction;
 
-  @Container
-  private static final MySQL MYSQL_CONTAINER = MySQL.getInstance();
+  @Container private static final MySQL MYSQL_CONTAINER = MySQL.getInstance();
   @Autowired private TransactionRepository repository;
+  @Autowired private ObjectMapper mapper;
   @MockBean private CommonUserRepository commonUserRepository;
   @MockBean private ShopkeeperRepository shopkeeperRepository;
 
   @BeforeAll
   static void init() {
-    mapper
-        .registerModule(new JavaTimeModule())
-        .disable(FAIL_ON_UNKNOWN_PROPERTIES)
-        .disable(WRITE_DATES_AS_TIMESTAMPS);
-
-    payer = new CommonUser(PAYER_ID, "", "", "", "", PAYER_BALANCE);
-    payee = new Shopkeeper(PAYEE_ID, "", "", "", "", PAYEE_BALANCE);
+    initObjects();
   }
 
   @BeforeEach
   void setUp() {
-    requestBody = new Transaction(null, PAYER_ID, PAYEE_ID, TRANS_VALUE, null);
 
     Mockito.when(commonUserRepository.findById(PAYER_ID)).thenReturn(Optional.of(payer));
     Mockito.when(shopkeeperRepository.findById(PAYEE_ID)).thenReturn(Optional.of(payee));
 
     transaction =
         given()
-            .basePath("/api/transactions/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .body(requestBody)
@@ -108,7 +94,7 @@ class TransactionControllerTest {
   void whenCreateReturnSuccess() {
     Response response =
         given()
-            .basePath("/api/transactions/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .body(requestBody)
@@ -128,7 +114,7 @@ class TransactionControllerTest {
 
     Response response =
         given()
-            .basePath("/api/transactions/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .pathParams("id", id)
@@ -151,5 +137,16 @@ class TransactionControllerTest {
   private String getId(Response entity) {
     String[] url = entity.getHeader("Location").split("/");
     return url[url.length - 1];
+  }
+
+  @NotNull
+  private static BigDecimal getFormattedBalance(Double value) {
+    return BigDecimal.valueOf(value).setScale(2, RoundingMode.CEILING);
+  }
+
+  private static void initObjects() {
+    payer = new CommonUser(PAYER_ID, "", "", "", "", PAYER_BALANCE);
+    payee = new Shopkeeper(PAYEE_ID, "", "", "", "", PAYEE_BALANCE);
+    requestBody = new Transaction(null, PAYER_ID, PAYEE_ID, TRANS_VALUE, null);
   }
 }

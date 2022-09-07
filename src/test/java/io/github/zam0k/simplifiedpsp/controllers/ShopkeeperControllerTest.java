@@ -1,5 +1,6 @@
 package io.github.zam0k.simplifiedpsp.controllers;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.zam0k.simplifiedpsp.configs.TestConfig;
 import io.github.zam0k.simplifiedpsp.containers.ContainerInit;
 import io.github.zam0k.simplifiedpsp.containers.MySQL;
@@ -8,7 +9,10 @@ import io.github.zam0k.simplifiedpsp.domain.Transaction;
 import io.github.zam0k.simplifiedpsp.repositories.ShopkeeperRepository;
 import io.github.zam0k.simplifiedpsp.repositories.TransactionRepository;
 import io.restassured.response.Response;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
@@ -19,8 +23,6 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.DeserializationFeature;
-import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -46,7 +48,9 @@ class ShopkeeperControllerTest {
   public static final String PASSWORD = "123456";
   public static final BigDecimal BALANCE =
       BigDecimal.valueOf(100.00).setScale(2, RoundingMode.CEILING);
-  private static final ObjectMapper mapper = new ObjectMapper();
+
+  private static final String BASE_PATH = "/api/shopkeepers/v1/";
+  private static final String PATH_TRANSACTIONS_ID = "{id}/transactions";
 
   private Shopkeeper requestBody;
   private String entityId;
@@ -54,18 +58,15 @@ class ShopkeeperControllerTest {
   @Container private static final MySQL MYSQL_CONTAINER = MySQL.getInstance();
   @MockBean private TransactionRepository transactionRepository;
   @Autowired private ShopkeeperRepository repository;
-
-  @BeforeAll
-  static void init() {
-    mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-  }
+  @Autowired private ObjectMapper mapper;
 
   @BeforeEach
   void setUp() {
-    requestBody = new Shopkeeper(null, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
+    initShopkeeper();
+
     Response response =
         given()
-            .basePath("/api/shopkeepers/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .body(requestBody)
@@ -86,7 +87,7 @@ class ShopkeeperControllerTest {
     requestBody.setCnpj("05.322.807/0001-64");
     Response response =
         given()
-            .basePath("/api/shopkeepers/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .body(requestBody)
@@ -105,15 +106,13 @@ class ShopkeeperControllerTest {
   void whenFindAllReturnSuccess() {
     Response response =
         given()
-            .basePath("/api/shopkeepers/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .when()
             .get();
 
     String content = response.getBody().asString();
-
-    System.out.println(content);
 
     Assertions.assertAll(
         () -> assertNotNull(response),
@@ -125,7 +124,7 @@ class ShopkeeperControllerTest {
   void whenFindByIdReturnSuccess() throws IOException {
     Response response =
         given()
-            .basePath("/api/shopkeepers/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .pathParams("id", entityId)
@@ -160,18 +159,14 @@ class ShopkeeperControllerTest {
 
     Response response =
         given()
-            .basePath("/api/shopkeepers/v1/")
+            .basePath(BASE_PATH)
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
             .pathParams("id", entityId)
             .when()
-            .get("{id}/transactions");
+            .get(PATH_TRANSACTIONS_ID);
 
     String content = response.getBody().asString();
-
-    System.out.println(response.getBody().prettyPrint());
-
-    System.out.println(content);
 
     // TO-DO: better assertions
     assertAll(
@@ -183,5 +178,9 @@ class ShopkeeperControllerTest {
   private String getEntityId(Response entity) {
     String[] url = entity.getHeader("Location").split("/");
     return url[url.length - 1];
+  }
+
+  private void initShopkeeper() {
+    requestBody = new Shopkeeper(null, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
   }
 }

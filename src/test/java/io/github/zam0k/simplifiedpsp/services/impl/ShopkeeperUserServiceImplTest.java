@@ -36,25 +36,23 @@ class ShopkeeperUserServiceImplTest {
   @Mock private ModelMapper mapper;
   @Mock private PagedResourcesAssembler<?> assembler;
 
-  private Shopkeeper entity;
-  private ShopkeeperDTO entityDTO;
-  private Optional<Shopkeeper> optionalEntity;
+  private Shopkeeper shopkeeper;
+  private ShopkeeperDTO shopkeeperDTO;
 
   @BeforeEach
   void setUp() {
-    entity = new Shopkeeper(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
-    entityDTO = new ShopkeeperDTO(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
-    optionalEntity = Optional.of(entity);
+    shopkeeper = new Shopkeeper(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
+    shopkeeperDTO = new ShopkeeperDTO(ID, FULL_NAME, CNPJ, EMAIL, PASSWORD, BALANCE);
   }
 
   @Test
   void whenSaveThenReturnSuccess() {
-    when(mapper.map(any(ShopkeeperDTO.class), any())).thenReturn(entity);
-    when(mapper.map(any(Shopkeeper.class), any())).thenReturn(entityDTO);
+    when(mapper.map(any(ShopkeeperDTO.class), any())).thenReturn(shopkeeper);
+    when(mapper.map(any(Shopkeeper.class), any())).thenReturn(shopkeeperDTO);
 
-    when(repository.save(any())).thenReturn(entity);
+    when(repository.save(any())).thenReturn(shopkeeper);
 
-    ShopkeeperDTO response = service.save(entityDTO);
+    ShopkeeperDTO response = service.save(shopkeeperDTO);
 
     assertAll(
         () -> assertNotNull(response),
@@ -67,16 +65,10 @@ class ShopkeeperUserServiceImplTest {
         () -> assertEquals(BALANCE, response.getBalance()));
   }
 
-  /* TO-DO: make this test in the ControllerJsonTest since (it seems) you can't unit test a PagedModel
-  @Test
-  void whenFindAllThenReturnShopList() {
-  }
-  */
-
   @Test
   void whenFindByIdThenReturnShop() {
-    when(mapper.map(any(Shopkeeper.class), any())).thenReturn(entityDTO);
-    when(repository.findById(any())).thenReturn(optionalEntity);
+    when(mapper.map(any(Shopkeeper.class), any())).thenReturn(shopkeeperDTO);
+    when(repository.findById(any())).thenReturn(Optional.of(shopkeeper));
 
     ShopkeeperDTO response = service.findById(ID);
 
