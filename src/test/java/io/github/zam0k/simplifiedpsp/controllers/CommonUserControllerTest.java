@@ -8,15 +8,18 @@ import io.github.zam0k.simplifiedpsp.domain.Transaction;
 import io.github.zam0k.simplifiedpsp.repositories.CommonUserRepository;
 import io.github.zam0k.simplifiedpsp.repositories.TransactionRepository;
 import io.github.zam0k.simplifiedpsp.services.exceptions.handler.ApiError;
-import io.restassured.path.json.JsonPath;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -25,12 +28,13 @@ import org.testcontainers.shaded.com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDateTime;
-import java.util.Map;
+import java.util.List;
 import java.util.UUID;
 
 import static io.restassured.RestAssured.given;
+import static java.util.Collections.EMPTY_LIST;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 import static org.testcontainers.shaded.com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
@@ -38,6 +42,7 @@ import static org.testcontainers.shaded.com.fasterxml.jackson.databind.Deseriali
 @SpringBootTest(webEnvironment = DEFINED_PORT)
 @AutoConfigureTestDatabase(replace = NONE)
 @ContextConfiguration(initializers = ContainerInit.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @Testcontainers
 class CommonUserControllerTest {
 
@@ -49,11 +54,13 @@ class CommonUserControllerTest {
       BigDecimal.valueOf(100.00).setScale(2, RoundingMode.CEILING);
 
   private CommonUser requestBody;
+  private String entityId;
   private static final ObjectMapper mapper = new ObjectMapper();
-  @Container private static final MySQL MYSQL_CONTAINER = MySQL.getInstance();
+  @Container
+  private static final MySQL MYSQL_CONTAINER = MySQL.getInstance();
 
   @Autowired private CommonUserRepository repository;
-  @Autowired private TransactionRepository transactionRepository;
+  @MockBean private TransactionRepository transactionRepository;
 
   @BeforeAll
   static void init() {
@@ -63,6 +70,15 @@ class CommonUserControllerTest {
   @BeforeEach
   void setUp() {
     requestBody = new CommonUser(null, FULL_NAME, CPF, EMAIL, PASSWORD, BALANCE);
+    Response response =
+        given()
+            .basePath("/api/common-users/v1/")
+            .port(TestConfig.SERVER_PORT)
+            .contentType(TestConfig.CONTENT_TYPE_JSON)
+            .body(requestBody)
+            .when()
+            .post();
+    entityId = getEntityId(response);
   }
 
   @AfterEach
@@ -72,6 +88,8 @@ class CommonUserControllerTest {
 
   @Test
   void whenCreateReturnSuccess() {
+    requestBody.setEmail("email@gmail.com");
+    requestBody.setCpf("104.920.880-39");
     Response response =
         given()
             .basePath("/api/common-users/v1/")
@@ -80,6 +98,8 @@ class CommonUserControllerTest {
             .body(requestBody)
             .when()
             .post();
+
+    System.out.println(response.getBody().prettyPrint());
 
     assertAll(
         () -> assertNotNull(response),
@@ -89,23 +109,12 @@ class CommonUserControllerTest {
 
   @Test
   void whenFindByIdReturnSuccess() throws IOException {
-    Response entity =
-        given()
-            .basePath("/api/common-users/v1/")
-            .port(TestConfig.SERVER_PORT)
-            .contentType(TestConfig.CONTENT_TYPE_JSON)
-            .body(requestBody)
-            .when()
-            .post();
-
-    String id = getEntityId(entity);
-
     Response response =
         given()
             .basePath("/api/common-users/v1/")
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
-            .pathParams("id", id)
+            .pathParams("id", entityId)
             .when()
             .get("{id}");
 
@@ -116,7 +125,7 @@ class CommonUserControllerTest {
         () -> assertNotNull(response),
         () -> assertEquals(200, response.getStatusCode()),
         () -> assertTrue(content.contains("_links\":{\"self\":{\"href\":")),
-        () -> assertEquals(UUID.fromString(id), responseBody.getId()),
+        () -> assertEquals(UUID.fromString(entityId), responseBody.getId()),
         () -> assertEquals(FULL_NAME, responseBody.getFullName()),
         () -> assertEquals(EMAIL, responseBody.getEmail()),
         () -> assertEquals(CPF, responseBody.getCpf()),
@@ -125,79 +134,42 @@ class CommonUserControllerTest {
 
   @Test
   void whenGetUserTransactionsReturnSuccess() {
-    Response payee =
-        given()
-            .basePath("/api/common-users/v1/")
-            .port(TestConfig.SERVER_PORT)
-            .contentType(TestConfig.CONTENT_TYPE_JSON)
-            .body(requestBody)
-            .when()
-            .post();
-
-    UUID payeeId = UUID.fromString(getEntityId(payee));
-
-    requestBody.setEmail("anotherEmail@gmail.com");
-    requestBody.setCpf("192.169.600-19");
-
-    Response payer =
-        given()
-            .basePath("/api/common-users/v1/")
-            .port(TestConfig.SERVER_PORT)
-            .contentType(TestConfig.CONTENT_TYPE_JSON)
-            .body(requestBody)
-            .when()
-            .post();
-
-    UUID payerId = UUID.fromString(getEntityId(payer));
-
     Transaction transaction =
-        new Transaction(null, payerId, payeeId, BigDecimal.valueOf(50.00), LocalDateTime.now());
+        new Transaction(
+            null, UUID.randomUUID(), UUID.fromString(entityId), BigDecimal.valueOf(50.0), null);
 
-    transactionRepository.save(transaction);
+    Mockito.when(transactionRepository.findAllOwnerTransactions(any(), any()))
+        .thenReturn(new PageImpl<>(List.of(transaction)));
 
     Response response =
         given()
             .basePath("/api/common-users/v1/")
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
-            .pathParams("id", payeeId)
+            .pathParams("id", entityId)
             .when()
             .get("{id}/transactions");
 
     String content = response.getBody().asString();
-    JsonPath jsonPath = JsonPath.from(content);
-    Map<String, String> transactionJson =
-        jsonPath.getMap("_embedded.transactions[0]", String.class, String.class);
-
-    response.body().asString();
 
     // TO-DO: better assertions
     assertAll(
         () -> assertNotNull(response),
         () -> assertEquals(200, response.getStatusCode()),
-        () -> assertNotNull(content),
-        () -> assertNotNull(transactionJson.get("_links")));
+        () -> assertNotNull(content));
   }
 
   @Test
   void whenGetUserTransactionsReturnNoContent() {
-    Response entity =
-        given()
-            .basePath("/api/common-users/v1/")
-            .port(TestConfig.SERVER_PORT)
-            .contentType(TestConfig.CONTENT_TYPE_JSON)
-            .body(requestBody)
-            .when()
-            .post();
-
-    String id = getEntityId(entity);
+    Mockito.when(transactionRepository.findAllOwnerTransactions(any(), any()))
+        .thenReturn(new PageImpl<Transaction>(EMPTY_LIST));
 
     Response response =
         given()
             .basePath("/api/common-users/v1/")
             .port(TestConfig.SERVER_PORT)
             .contentType(TestConfig.CONTENT_TYPE_JSON)
-            .pathParams("id", id)
+            .pathParams("id", entityId)
             .when()
             .get("{id}/transactions");
 

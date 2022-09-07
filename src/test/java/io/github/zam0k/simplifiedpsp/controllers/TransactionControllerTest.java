@@ -17,9 +17,12 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -27,11 +30,13 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.Optional;
 import java.util.UUID;
 
 import static com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES;
 import static com.fasterxml.jackson.databind.SerializationFeature.WRITE_DATES_AS_TIMESTAMPS;
 import static io.restassured.RestAssured.given;
+import static java.util.UUID.randomUUID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase.Replace.NONE;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -39,14 +44,17 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 @SpringBootTest(webEnvironment = DEFINED_PORT)
 @AutoConfigureTestDatabase(replace = NONE)
 @ContextConfiguration(initializers = ContainerInit.class)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 @Testcontainers
 class TransactionControllerTest {
   public static final BigDecimal TRANS_VALUE =
       BigDecimal.valueOf(10.00).setScale(2, RoundingMode.CEILING);
 
+  public static final UUID PAYER_ID = randomUUID();
   public static final BigDecimal PAYER_BALANCE =
       BigDecimal.valueOf(100.00).setScale(2, RoundingMode.CEILING);
 
+  public static final UUID PAYEE_ID = randomUUID();
   public static final BigDecimal PAYEE_BALANCE =
       BigDecimal.valueOf(100.00).setScale(2, RoundingMode.CEILING);
 
@@ -57,58 +65,29 @@ class TransactionControllerTest {
   private static Shopkeeper payee;
   private Response transaction;
 
-  @Container private static final MySQL MYSQL_CONTAINER = MySQL.getInstance();
+  @Container
+  private static final MySQL MYSQL_CONTAINER = MySQL.getInstance();
   @Autowired private TransactionRepository repository;
-  @Autowired private CommonUserRepository commonUserRepository;
-  @Autowired private ShopkeeperRepository shopkeeperRepository;
+  @MockBean private CommonUserRepository commonUserRepository;
+  @MockBean private ShopkeeperRepository shopkeeperRepository;
 
   @BeforeAll
   static void init() {
-
     mapper
         .registerModule(new JavaTimeModule())
         .disable(FAIL_ON_UNKNOWN_PROPERTIES)
         .disable(WRITE_DATES_AS_TIMESTAMPS);
 
-    payer =
-        new CommonUser(
-            null, "Foo Bar", "275.974.380-28", "foobar@gmail.com", "randomPassword", PAYER_BALANCE);
-    payee =
-        new Shopkeeper(
-            null,
-            "Foo Bar Inc",
-            "94.361.252/0001-90",
-            "foobarin@gmail.com",
-            "randomPassword",
-            PAYEE_BALANCE);
+    payer = new CommonUser(PAYER_ID, "", "", "", "", PAYER_BALANCE);
+    payee = new Shopkeeper(PAYEE_ID, "", "", "", "", PAYEE_BALANCE);
   }
 
   @BeforeEach
   void setUp() {
-    requestBody = new Transaction(null, null, null, TRANS_VALUE, null);
-    Response payerResponse =
-        given()
-            .basePath("/api/common-users/v1/")
-            .port(TestConfig.SERVER_PORT)
-            .contentType(TestConfig.CONTENT_TYPE_JSON)
-            .body(payer)
-            .when()
-            .post();
+    requestBody = new Transaction(null, PAYER_ID, PAYEE_ID, TRANS_VALUE, null);
 
-    Response payeeResponse =
-        given()
-            .basePath("/api/shopkeepers/v1/")
-            .port(TestConfig.SERVER_PORT)
-            .contentType(TestConfig.CONTENT_TYPE_JSON)
-            .body(payee)
-            .when()
-            .post();
-
-    UUID payeeID = UUID.fromString(getId(payeeResponse));
-    UUID payerID = UUID.fromString(getId(payerResponse));
-
-    requestBody.setPayee(payeeID);
-    requestBody.setPayer(payerID);
+    Mockito.when(commonUserRepository.findById(PAYER_ID)).thenReturn(Optional.of(payer));
+    Mockito.when(shopkeeperRepository.findById(PAYEE_ID)).thenReturn(Optional.of(payee));
 
     transaction =
         given()
@@ -123,8 +102,6 @@ class TransactionControllerTest {
   @AfterEach
   void tearDown() {
     repository.deleteAll();
-    commonUserRepository.deleteAll();
-    shopkeeperRepository.deleteAll();
   }
 
   @Test
